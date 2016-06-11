@@ -27,6 +27,7 @@
 
 #import <UIKit/UIKit.h>
 
+//NS_ASSUME_NONNULL_BEGIN和NS_ASSUME_NONNULL_END。在这两个宏之间的代码，所有简单指针对象都被假定为nonnull，因此我们只需要去指定那些nullable的指针
 NS_ASSUME_NONNULL_BEGIN
 
 /**
@@ -40,6 +41,11 @@ NS_ASSUME_NONNULL_BEGIN
 
  See the Apple Human Interface Guidelines section about the Network Activity Indicator for more information:
  http://developer.apple.com/library/iOS/#documentation/UserExperience/Conceptual/MobileHIG/UIElementGuidelines/UIElementGuidelines.html#//apple_ref/doc/uid/TP40006556-CH13-SW44
+ 
+ 
+ 管理状态栏的网络状态指示器 
+ 
+ 使用方法:[[AFNetworkActivityIndicatorManager sharedManager] setEnabled:YES];
  */
 NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropriate instead.")
 @interface AFNetworkActivityIndicatorManager : NSObject
@@ -63,11 +69,14 @@ NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropri
 
  > Display the network activity indicator to provide feedback when your app accesses the network for more than a couple of seconds. If the operation finishes sooner than that, you don’t have to show the network activity indicator, because the indicator is likely to disappear before users notice its presence.
 
+ 延迟显示时间 默认1秒 如果网络请求很快 那么没必要显示
  */
 @property (nonatomic, assign) NSTimeInterval activationDelay;
 
 /**
  A time interval indicating the duration of time of no networking activity required before the activity indicator is disabled. This allows for continuous display of the network activity indicator across multiple requests. The default value is 0.17 seconds.
+ 
+ 延迟消失 默认0.17秒
  */
 
 @property (nonatomic, assign) NSTimeInterval completionDelay;
@@ -81,21 +90,34 @@ NS_EXTENSION_UNAVAILABLE_IOS("Use view controller based solutions where appropri
 
 /**
  Increments the number of active network requests. If this number was zero before incrementing, this will start animating the status bar network activity indicator.
+ 
+ 指示器根据ActivityCount来显示或者消失
  */
 - (void)incrementActivityCount;
 
 /**
  Decrements the number of active network requests. If this number becomes zero after decrementing, this will stop animating the status bar network activity indicator.
+ 
+ 指示器根据ActivityCount来显示或者消失
  */
 - (void)decrementActivityCount;
 
 /**
  Set the a custom method to be executed when the network activity indicator manager should be hidden/shown. By default, this is null, and the UIApplication Network Activity Indicator will be managed automatically. If this block is set, it is the responsiblity of the caller to manager the network activity indicator going forward.
+ 
+ 尽量不用。。。
+ 
+ activity indicator消失或者隐藏之前调用 默认为null
+ 
+ 默认使用以下表达式来设置指示器：
+ 
+ [[UIApplication sharedApplication] setNetworkActivityIndicatorVisible:networkActivityIndicatorVisible]
+ 
+ 如果networkActivityIndicatorVisible不为空则需要用户自己设置指示器的显示和隐藏
 
  @param block A block to be executed when the network activity indicator status changes.
  */
 - (void)setNetworkingActivityActionWithBlock:(nullable void (^)(BOOL networkActivityIndicatorVisible))block;
-
 @end
 
 NS_ASSUME_NONNULL_END
