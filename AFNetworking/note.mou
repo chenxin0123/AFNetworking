@@ -1,0 +1,15 @@
+######@AFNetworkActivityIndicatorManager
+    管理状态栏的网络状态指示器,监听以下三个通知来实现逻辑:
+    AFNetworkingTaskDidSuspendNotification
+    AFNetworkingTaskDidResumeNotification
+    AFNetworkingTaskDidCompleteNotification
+######&lt;AFURLResponseSerialization&gt;
+    根据服务端返回的细节,验证、解析数据
+    AFHTTPResponseSerializer AFJSONResponseSerializer等均实现了该协议
+######@AFHTTPResponseSerializer
+######
+######
+######
+######
+######
+######

@@ -279,7 +279,6 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
 }
 ///completionDelayTimer的回调
 - (void)completionDelayTimerFired {
-    //???
     [self setCurrentState:AFNetworkActivityManagerStateNotActive];
 }
 ///r

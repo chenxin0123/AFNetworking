@@ -28,6 +28,8 @@ NS_ASSUME_NONNULL_BEGIN
  The `AFURLResponseSerialization` protocol is adopted by an object that decodes data into a more useful object representation, according to details in the server response. Response serializers may additionally perform validation on the incoming response and data.
 
  For example, a JSON response serializer may check for an acceptable status code (`2XX` range) and content type (`application/json`), decoding a valid JSON response into an object.
+ 
+ 根据服务端返回的细节,验证、解析数据
  */
 @protocol AFURLResponseSerialization <NSObject, NSSecureCoding, NSCopying>
 
@@ -39,6 +41,8 @@ NS_ASSUME_NONNULL_BEGIN
  @param error The error that occurred while attempting to decode the response data.
 
  @return The object decoded from the specified response data.
+ 
+ 解析返回的data
  */
 - (nullable id)responseObjectForResponse:(nullable NSURLResponse *)response
                            data:(nullable NSData *)data
@@ -59,6 +63,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  The string encoding used to serialize data received from the server, when no string encoding is specified by the response. `NSUTF8StringEncoding` by default.
+ 
+ 编码方式默认NSUTF8StringEncoding
  */
 @property (nonatomic, assign) NSStringEncoding stringEncoding;
 
@@ -75,11 +81,22 @@ NS_ASSUME_NONNULL_BEGIN
  The acceptable HTTP status codes for responses. When non-`nil`, responses with status codes not contained by the set will result in an error during validation.
 
  See http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+ 
+ 可接受的状态码 如果非空 当有状态码不在此集合 在验证的时候将出错
+ 
+ 默认[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 100)]
+ 
+ Informational:     1xx
+ Successful:        2xx
+ Redirection:       3xx
+ Client Error:      4xx
  */
 @property (nonatomic, copy, nullable) NSIndexSet *acceptableStatusCodes;
 
 /**
  The acceptable MIME types for responses. When non-`nil`, responses with a `Content-Type` with MIME types that do not intersect with the set will result in an error during validation.
+ 
+ 可接受的内容MIME类型 默认nil
  */
 @property (nonatomic, copy, nullable) NSSet <NSString *> *acceptableContentTypes;
 
@@ -93,6 +110,8 @@ NS_ASSUME_NONNULL_BEGIN
  @param error The error that occurred while attempting to validate the response.
 
  @return `YES` if the response is valid, otherwise `NO`.
+ 
+ 解析数据前先验证
  */
 - (BOOL)validateResponse:(nullable NSHTTPURLResponse *)response
                     data:(nullable NSData *)data
@@ -123,6 +142,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Whether to remove keys with `NSNull` values from response JSON. Defaults to `NO`.
+ 是否将NSNull的key移除掉
  */
 @property (nonatomic, assign) BOOL removesKeysWithNullValues;
 
