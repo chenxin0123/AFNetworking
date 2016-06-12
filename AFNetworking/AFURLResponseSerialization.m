@@ -101,7 +101,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 + (instancetype)serializer {
     return [[self alloc] init];
 }
-
+///r
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -471,6 +471,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 
 #pragma mark - AFURLResponseSerialization
 
+///使用NSPropertyListSerialization解析
 - (id)responseObjectForResponse:(NSURLResponse *)response
                            data:(NSData *)data
                           error:(NSError *__autoreleasing *)error
@@ -496,7 +497,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - NSSecureCoding
-
+///r
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (!self) {
@@ -508,7 +509,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 
     return self;
 }
-
+///r
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
 
@@ -517,7 +518,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - NSCopying
-
+///r
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFPropertyListResponseSerializer *serializer = [[[self class] allocWithZone:zone] init];
     serializer.format = self.format;
@@ -542,6 +543,7 @@ static NSLock* imageLock = nil;
 
 @implementation UIImage (AFNetworkingSafeImageLoading)
 
+///线程安全的imageWithData
 + (UIImage *)af_safeImageWithData:(NSData *)data {
     UIImage* image = nil;
     static dispatch_once_t onceToken;
@@ -557,6 +559,7 @@ static NSLock* imageLock = nil;
 
 @end
 
+///根据scale获取图片 ???如果图片有动画images直接返回图片 不处理scale
 static UIImage * AFImageWithDataAtScale(NSData *data, CGFloat scale) {
     UIImage *image = [UIImage af_safeImageWithData:data];
     if (image.images) {

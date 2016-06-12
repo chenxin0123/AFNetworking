@@ -258,11 +258,15 @@ NS_ASSUME_NONNULL_BEGIN
 #if TARGET_OS_IOS || TARGET_OS_TV || TARGET_OS_WATCH
 /**
  The scale factor used when interpreting the image data to construct `responseImage`. Specifying a scale factor of 1.0 results in an image whose size matches the pixel-based dimensions of the image. Applying a different scale factor changes the size of the image as reported by the size property. This is set to the value of scale of the main screen by default, which automatically scales images for retina displays, for instance.
+ 
+ 默认是屏幕的scale
  */
 @property (nonatomic, assign) CGFloat imageScale;
 
 /**
  Whether to automatically inflate response image data for compressed formats (such as PNG or JPEG). Enabling this can significantly improve drawing performance on iOS when used with `setCompletionBlockWithSuccess:failure:`, as it allows a bitmap representation to be constructed in the background rather than on the main thread. `YES` by default.
+ 
+ ///自动展开图片 这样允许构造位图来进行后台绘制而不阻塞主线程 默认YES
  */
 @property (nonatomic, assign) BOOL automaticallyInflatesResponseImage;
 #endif
