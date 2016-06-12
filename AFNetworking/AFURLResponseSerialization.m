@@ -56,6 +56,7 @@ static NSError * AFErrorWithUnderlyingError(NSError *error, NSError *underlyingE
     return [[NSError alloc] initWithDomain:error.domain code:error.code userInfo:mutableUserInfo];
 }
 
+///error或者error.userInfo[NSUnderlyingErrorKey]的domain等于domainqie错误码等于code
 static BOOL AFErrorOrUnderlyingErrorHasCodeInDomain(NSError *error, NSInteger code, NSString *domain) {
     if ([error.domain isEqualToString:domain] && error.code == code) {
         return YES;
@@ -66,8 +67,11 @@ static BOOL AFErrorOrUnderlyingErrorHasCodeInDomain(NSError *error, NSInteger co
     return NO;
 }
 
+
+///移除空<NSNull>值 递归
 static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingOptions readingOptions) {
     if ([JSONObject isKindOfClass:[NSArray class]]) {
+        //数组 遍历
         NSMutableArray *mutableArray = [NSMutableArray arrayWithCapacity:[(NSArray *)JSONObject count]];
         for (id value in (NSArray *)JSONObject) {
             [mutableArray addObject:AFJSONObjectByRemovingKeysWithNullValues(value, readingOptions)];
@@ -85,6 +89,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
             }
         }
 
+        //这样返回的叶子都是可变的 所以只要判断是否NSJSONReadingMutableContainers
         return (readingOptions & NSJSONReadingMutableContainers) ? mutableDictionary : [NSDictionary dictionaryWithDictionary:mutableDictionary];
     }
 
@@ -106,14 +111,14 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
     self.stringEncoding = NSUTF8StringEncoding;
 
     self.acceptableStatusCodes = [NSIndexSet indexSetWithIndexesInRange:NSMakeRange(200, 100)];
-    ///???
+    //默认nil 不验证acceptableContentTypes
     self.acceptableContentTypes = nil;
 
     return self;
 }
 
 #pragma mark -
-
+///r
 - (BOOL)validateResponse:(NSHTTPURLResponse *)response
                     data:(NSData *)data
                    error:(NSError * __autoreleasing *)error
@@ -122,6 +127,8 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
     NSError *validationError = nil;
     //response必须是NSHTTPURLResponse实例
     if (response && [response isKindOfClass:[NSHTTPURLResponse class]]) {
+        /*先验证acceptableContentTypes再验证acceptableStatusCodes*/
+        
         //acceptableContentTypes非空且未包含response的MIMEType 且response的MIMEType为空或data长度为0
         if (self.acceptableContentTypes && ![self.acceptableContentTypes containsObject:[response MIMEType]] &&
             !([response MIMEType] == nil && [data length] == 0)) {
@@ -142,7 +149,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
             
             responseIsValid = NO;
         }
-        ///!!!
+        
         if (self.acceptableStatusCodes && ![self.acceptableStatusCodes containsIndex:(NSUInteger)response.statusCode] && [response URL]) {
             NSMutableDictionary *mutableUserInfo = [@{
                                                NSLocalizedDescriptionKey: [NSString stringWithFormat:NSLocalizedStringFromTable(@"Request failed: %@ (%ld)", @"AFNetworking", nil), [NSHTTPURLResponse localizedStringForStatusCode:response.statusCode], (long)response.statusCode],
@@ -168,7 +175,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - AFURLResponseSerialization
-
+///先验证 然后直接返回data
 - (id)responseObjectForResponse:(NSURLResponse *)response
                            data:(NSData *)data
                           error:(NSError *__autoreleasing *)error
@@ -179,11 +186,11 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - NSSecureCoding
-
+///r
 + (BOOL)supportsSecureCoding {
     return YES;
 }
-
+///r
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [self init];
     if (!self) {
@@ -195,14 +202,14 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 
     return self;
 }
-
+///r
 - (void)encodeWithCoder:(NSCoder *)coder {
     [coder encodeObject:self.acceptableStatusCodes forKey:NSStringFromSelector(@selector(acceptableStatusCodes))];
     [coder encodeObject:self.acceptableContentTypes forKey:NSStringFromSelector(@selector(acceptableContentTypes))];
 }
 
 #pragma mark - NSCopying
-
+///r
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFHTTPResponseSerializer *serializer = [[[self class] allocWithZone:zone] init];
     serializer.acceptableStatusCodes = [self.acceptableStatusCodes copyWithZone:zone];
@@ -216,18 +223,18 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 #pragma mark -
 
 @implementation AFJSONResponseSerializer
-
+/// 调用serializerWithReadingOptions:
 + (instancetype)serializer {
     return [self serializerWithReadingOptions:(NSJSONReadingOptions)0];
 }
-
+///r
 + (instancetype)serializerWithReadingOptions:(NSJSONReadingOptions)readingOptions {
     AFJSONResponseSerializer *serializer = [[self alloc] init];
     serializer.readingOptions = readingOptions;
 
     return serializer;
 }
-
+///r
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -241,10 +248,15 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 
 #pragma mark - AFURLResponseSerialization
 
+/**
+ *  重写父类方法 调用系统的NSJSONSerialization解析数据然后调用AFJSONObjectByRemovingKeysWithNullValues移除空值(IfNeeded)
+ *
+ */
 - (id)responseObjectForResponse:(NSURLResponse *)response
                            data:(NSData *)data
                           error:(NSError *__autoreleasing *)error
 {
+    //调用父类实现来验证返回数据
     if (![self validateResponse:(NSHTTPURLResponse *)response data:data error:error]) {
         if (!error || AFErrorOrUnderlyingErrorHasCodeInDomain(*error, NSURLErrorCannotDecodeContentData, AFURLResponseSerializationErrorDomain)) {
             return nil;
@@ -256,12 +268,14 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
     // Workaround for behavior of Rails to return a single space for `head :ok` (a workaround for a bug in Safari), which is not interpreted as valid input by NSJSONSerialization.
     // See https://github.com/rails/rails/issues/1742
     BOOL isSpace = [data isEqualToData:[NSData dataWithBytes:" " length:1]];
+    //调用系统的NSJSONSerialization解析数据
     if (data.length > 0 && !isSpace) {
         responseObject = [NSJSONSerialization JSONObjectWithData:data options:self.readingOptions error:&serializationError];
     } else {
         return nil;
     }
 
+    //移除Null的值
     if (self.removesKeysWithNullValues && responseObject) {
         responseObject = AFJSONObjectByRemovingKeysWithNullValues(responseObject, self.readingOptions);
     }
@@ -274,7 +288,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - NSSecureCoding
-
+///r
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (!self) {
@@ -286,7 +300,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 
     return self;
 }
-
+///r
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
 
@@ -295,7 +309,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - NSCopying
-
+///r
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFJSONResponseSerializer *serializer = [[[self class] allocWithZone:zone] init];
     serializer.readingOptions = self.readingOptions;
@@ -309,13 +323,13 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 #pragma mark -
 
 @implementation AFXMLParserResponseSerializer
-
+///r
 + (instancetype)serializer {
     AFXMLParserResponseSerializer *serializer = [[self alloc] init];
 
     return serializer;
 }
-
+///r
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -328,7 +342,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - AFURLResponseSerialization
-
+///只验证acceptableContentTypes 调用系统的NSXMLParser解析 //??? 返回解析器?
 - (id)responseObjectForResponse:(NSHTTPURLResponse *)response
                            data:(NSData *)data
                           error:(NSError *__autoreleasing *)error
@@ -349,18 +363,18 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 #ifdef __MAC_OS_X_VERSION_MIN_REQUIRED
 
 @implementation AFXMLDocumentResponseSerializer
-
+///r
 + (instancetype)serializer {
     return [self serializerWithXMLDocumentOptions:0];
 }
-
+///r
 + (instancetype)serializerWithXMLDocumentOptions:(NSUInteger)mask {
     AFXMLDocumentResponseSerializer *serializer = [[self alloc] init];
     serializer.options = mask;
 
     return serializer;
 }
-
+///r
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -373,7 +387,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - AFURLResponseSerialization
-
+///使用NSXMLDocument 返回NSXMLDocument实例
 - (id)responseObjectForResponse:(NSURLResponse *)response
                            data:(NSData *)data
                           error:(NSError *__autoreleasing *)error
@@ -395,7 +409,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - NSSecureCoding
-
+///r
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (!self) {
@@ -406,7 +420,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 
     return self;
 }
-
+///r
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
 
@@ -414,7 +428,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 }
 
 #pragma mark - NSCopying
-
+///r
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFXMLDocumentResponseSerializer *serializer = [[[self class] allocWithZone:zone] init];
     serializer.options = self.options;
@@ -429,11 +443,11 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 #pragma mark -
 
 @implementation AFPropertyListResponseSerializer
-
+///返回format为NSPropertyListXMLFormat_v1_0的解析器
 + (instancetype)serializer {
     return [self serializerWithFormat:NSPropertyListXMLFormat_v1_0 readOptions:0];
 }
-
+///r
 + (instancetype)serializerWithFormat:(NSPropertyListFormat)format
                          readOptions:(NSPropertyListReadOptions)readOptions
 {
@@ -443,7 +457,7 @@ static id AFJSONObjectByRemovingKeysWithNullValues(id JSONObject, NSJSONReadingO
 
     return serializer;
 }
-
+///r
 - (instancetype)init {
     self = [super init];
     if (!self) {
