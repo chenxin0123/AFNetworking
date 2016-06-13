@@ -27,7 +27,6 @@ AFHTTPRequestSerializer实现了该协议,以下均派生自AFHTTPRequestSeriali
 封装了整个multipart数据的读取
 ######@AFStreamingMultipartFormData
 把数据转成不同类型的AFHTTPBodyPart，添加到自定义的AFMultipartBodyStream属性
-
 ######
 ######
 ######

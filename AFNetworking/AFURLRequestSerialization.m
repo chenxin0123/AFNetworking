@@ -1039,6 +1039,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 /**
  *  The NSStream documentation indicates that subclasses must override -(void)scheduleInRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode and -(void)removeFromRunLoop:(NSRunLoop *)aRunLoop forMode:(NSString *)mode.
  */
+
 - (void)scheduleInRunLoop:(__unused NSRunLoop *)aRunLoop
                   forMode:(__unused NSString *)mode
 {}
