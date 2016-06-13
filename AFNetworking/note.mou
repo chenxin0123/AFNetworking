@@ -4,9 +4,30 @@
     AFNetworkingTaskDidResumeNotification
     AFNetworkingTaskDidCompleteNotification
 ######&lt;AFURLResponseSerialization&gt;
-    根据服务端返回的细节,验证、解析数据
-    AFHTTPResponseSerializer AFJSONResponseSerializer等均实现了该协议
-######@AFHTTPResponseSerializer
+根据服务端返回的细节,验证、解析数据
+AFHTTPResponseSerializer实现了该协议,以下均派生自AFHTTPResponseSerializer
+
+- AFJSONResponseSerializer
+- AFXMLParserResponseSerializer
+- AFXMLDocumentResponseSerializer
+- AFPropertyListResponseSerializer
+- AFImageResponseSerializer
+- AFCompoundResponseSerializer
+
+######&lt;AFURLRequestSerialization&gt;
+编码请求的参数 请求体 请求头的Content-Type等 目标是生成最终的NSURLRequest
+AFHTTPRequestSerializer实现了该协议,以下均派生自AFHTTPRequestSerializer
+
+- AFJSONRequestSerializer
+- AFPropertyListRequestSerializer
+
+######@AFHTTPBodyPart
+相当于一个multi-part请求体的一个段
+######@AFMultipartBodyStream
+封装了整个multipart数据的读取
+######@AFStreamingMultipartFormData
+把数据转成不同类型的AFHTTPBodyPart，添加到自定义的AFMultipartBodyStream属性
+
 ######
 ######
 ######

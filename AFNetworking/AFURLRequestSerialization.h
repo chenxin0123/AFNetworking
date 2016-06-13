@@ -43,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param string The string to be percent-escaped.
  
  @return The percent-escaped string.
+ 
+ 将字符串转换成%x形式 使用stringByAddingPercentEncodingWithAllowedCharacters:
+ 
  */
 FOUNDATION_EXPORT NSString * AFPercentEscapedStringFromString(NSString *string);
 
@@ -52,6 +55,9 @@ FOUNDATION_EXPORT NSString * AFPercentEscapedStringFromString(NSString *string);
  @param parameters A dictionary of key/values to be encoded.
 
  @return A url encoded query string
+ 
+ 返回url上的参数x=x&x=x
+ 
  */
 FOUNDATION_EXPORT NSString * AFQueryStringFromParameters(NSDictionary *parameters);
 
@@ -59,6 +65,8 @@ FOUNDATION_EXPORT NSString * AFQueryStringFromParameters(NSDictionary *parameter
  The `AFURLRequestSerialization` protocol is adopted by an object that encodes parameters for a specified HTTP requests. Request serializers may encode parameters as query strings, HTTP bodies, setting the appropriate HTTP header fields as necessary.
 
  For example, a JSON request serializer may set the HTTP body of the request to a JSON representation, and set the `Content-Type` HTTP header field value to `application/json`.
+ 
+ 编码请求的参数 请求体 请求头的Content-Type等
  */
 @protocol AFURLRequestSerialization <NSObject, NSSecureCoding, NSCopying>
 
@@ -86,6 +94,7 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
     AFHTTPRequestQueryStringDefaultStyle = 0,
 };
 
+
 @protocol AFMultipartFormData;
 
 /**
@@ -104,6 +113,7 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  Whether created requests can use the device’s cellular radio (if present). `YES` by default.
 
  @see NSMutableURLRequest -setAllowsCellularAccess:
+ 允许使用蜂窝数据 默认是
  */
 @property (nonatomic, assign) BOOL allowsCellularAccess;
 
@@ -111,6 +121,9 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  The cache policy of created requests. `NSURLRequestUseProtocolCachePolicy` by default.
 
  @see NSMutableURLRequest -setCachePolicy:
+ 
+ 请求的缓存策略 使用默认NSURLRequestUseProtocolCachePolicy
+ 
  */
 @property (nonatomic, assign) NSURLRequestCachePolicy cachePolicy;
 
@@ -118,6 +131,9 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  Whether created requests should use the default cookie handling. `YES` by default.
 
  @see NSMutableURLRequest -setHTTPShouldHandleCookies:
+ 
+ 是否使用cookie 表示是否应该给request设置cookie并随request一起发送出去 默认YES
+ 
  */
 @property (nonatomic, assign) BOOL HTTPShouldHandleCookies;
 
@@ -125,6 +141,9 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  Whether created requests can continue transmitting data before receiving a response from an earlier transmission. `NO` by default
 
  @see NSMutableURLRequest -setHTTPShouldUsePipelining:
+ 
+ 是否可以在未收到上一个请求的回复时持续发送其他请求 默认NO
+ 
  */
 @property (nonatomic, assign) BOOL HTTPShouldUsePipelining;
 
@@ -132,6 +151,9 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  The network service type for created requests. `NSURLNetworkServiceTypeDefault` by default.
 
  @see NSMutableURLRequest -setNetworkServiceType:
+ 
+ 这个network service是为了告诉系统网络层这个request使用的目的 系统能根据提供的信息来优化网络处理，从而优化电池寿命，网络性能等等
+ 
  */
 @property (nonatomic, assign) NSURLRequestNetworkServiceType networkServiceType;
 
@@ -139,6 +161,9 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  The timeout interval, in seconds, for created requests. The default timeout interval is 60 seconds.
 
  @see NSMutableURLRequest -setTimeoutInterval:
+ 
+ 超时时间 默认60秒
+ 
  */
 @property (nonatomic, assign) NSTimeInterval timeoutInterval;
 
@@ -153,6 +178,8 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  - `User-Agent` with the contents of various bundle identifiers and OS designations
 
  @discussion To add or remove default request headers, use `setValue:forHTTPHeaderField:`.
+ 
+ 提供默认的请求头字段
  */
 @property (readonly, nonatomic, strong) NSDictionary <NSString *, NSString *> *HTTPRequestHeaders;
 
@@ -166,6 +193,8 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
 
  @param field The HTTP header to set a default value for
  @param value The value set as default for the specified header, or `nil`
+ 
+ 给请求头添加字段 设为nil则移除已有字段
  */
 - (void)setValue:(nullable NSString *)value
 forHTTPHeaderField:(NSString *)field;
@@ -184,6 +213,17 @@ forHTTPHeaderField:(NSString *)field;
 
  @param username The HTTP basic auth username
  @param password The HTTP basic auth password
+ 
+ 基本认证机制 在你访问一个需要HTTP Basic Authentication的URL的时候，如果你没有提供用户名和密码，服务器就会返回401，如果你直接在浏览器中打开，浏览器会提示你输入用户名和密码
+ 
+ 要在发送请求的时候添加HTTP Basic Authentication认证信息到请求中
+ 
+ 一是在请求头中添加Authorization：
+ Authorization: "Basic 用户名和密码的base64加密字符串"
+ 
+ 二是在url中添加用户名和密码：
+ http://userName:password@api.minicloud.com.cn/statuses/friends_timeline.xml
+ 
  */
 - (void)setAuthorizationHeaderFieldWithUsername:(NSString *)username
                                        password:(NSString *)password;
@@ -199,6 +239,9 @@ forHTTPHeaderField:(NSString *)field;
 
 /**
  HTTP methods for which serialized requests will encode parameters as a query string. `GET`, `HEAD`, and `DELETE` by default.
+ 
+ 那些情况下 请求的参数将被编码成字符串
+ 
  */
 @property (nonatomic, strong) NSSet <NSString *> *HTTPMethodsEncodingParametersInURI;
 
@@ -208,6 +251,9 @@ forHTTPHeaderField:(NSString *)field;
  @param style The serialization style.
 
  @see AFHTTPRequestQueryStringSerializationStyle
+ 
+ 只有一个0。。。//???
+ 
  */
 - (void)setQueryStringSerializationWithStyle:(AFHTTPRequestQueryStringSerializationStyle)style;
 
@@ -215,6 +261,7 @@ forHTTPHeaderField:(NSString *)field;
  Set the a custom method of query string serialization according to the specified block.
 
  @param block A block that defines a process of encoding parameters into a query string. This block returns the query string and takes three arguments: the request, the parameters to encode, and the error that occurred when attempting to encode parameters for the given request.
+ //???
  */
 - (void)setQueryStringSerializationWithBlock:(nullable NSString * (^)(NSURLRequest *request, id parameters, NSError * __autoreleasing *error))block;
 
@@ -279,6 +326,11 @@ forHTTPHeaderField:(NSString *)field;
 
 /**
  The `AFMultipartFormData` protocol defines the methods supported by the parameter in the block argument of `AFHTTPRequestSerializer -multipartFormRequestWithMethod:URLString:parameters:constructingBodyWithBlock:`.
+ 
+ Multipart是HTTP协议为web表单新增的上传文件的协议
+ http://blog.cnbang.net/tech/2371/
+ 
+ 
  */
 @protocol AFMultipartFormData
 
@@ -292,6 +344,9 @@ forHTTPHeaderField:(NSString *)field;
  @param error If an error occurs, upon return contains an `NSError` object that describes the problem.
 
  @return `YES` if the file data was successfully appended, otherwise `NO`.
+ 
+ 调用下面的方法 fileName使用name
+ 
  */
 - (BOOL)appendPartWithFileURL:(NSURL *)fileURL
                          name:(NSString *)name
@@ -369,6 +424,11 @@ forHTTPHeaderField:(NSString *)field;
 
  @param numberOfBytes Maximum packet size, in number of bytes. The default packet size for an input stream is 16kb.
  @param delay Duration of delay each time a packet is read. By default, no delay is set.
+ 
+ 限制带宽 3G等网络 
+ 
+ 使用方法 当发生request body stream exhausted时使用 并重新请求
+ 
  */
 - (void)throttleBandwidthWithPacketSize:(NSUInteger)numberOfBytes
                                   delay:(NSTimeInterval)delay;
