@@ -661,7 +661,10 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 @property (nonatomic, copy) NSString *boundary;
 ///可能是三种类型(NSURL/NSData/NSInputStream)之一
 @property (nonatomic, strong) id body;
-///数据体长度
+/*数据体长度 
+ * NSURL：从文件属性fileAttributes[NSFileSize]中获取
+ *
+ */
 @property (nonatomic, assign) unsigned long long bodyContentLength;
 ///实际上三种类型(FileURL/NSData/NSInputStream)的数据在AFHTTPBodyPart都转成NSInputStream
 @property (nonatomic, strong) NSInputStream *inputStream;
@@ -685,9 +688,9 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
  *  最后把AFMultipartBodyStream赋给原来NSMutableURLRequest的bodyStream
  */
 @interface AFMultipartBodyStream : NSInputStream <NSStreamDelegate>
-//数据的字节数
+//一次read最多可读取的字节数 默认是NSIntegerMax kAFUploadStream3GSuggestedPacketSize
 @property (nonatomic, assign) NSUInteger numberOfBytesInPacket;
-//??? 延迟 读取数据时每个循环后执行[NSThread sleepForTimeInterval:self.delay];
+//kAFUploadStream3GSuggestedDelay 延迟 读取数据时每个循环后执行[NSThread sleepForTimeInterval:self.delay];
 @property (nonatomic, assign) NSTimeInterval delay;
 
 @property (nonatomic, strong) NSInputStream *inputStream;
@@ -753,7 +756,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 
     return [self appendPartWithFileURL:fileURL name:name fileName:fileName mimeType:mimeType error:error];
 }
-
+///r
 - (BOOL)appendPartWithFileURL:(NSURL *)fileURL
                          name:(NSString *)name
                      fileName:(NSString *)fileName
@@ -766,14 +769,15 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     NSParameterAssert(mimeType);
 
     if (![fileURL isFileURL]) {
-        //文件url
+        //必须是文件url
         NSDictionary *userInfo = @{NSLocalizedFailureReasonErrorKey: NSLocalizedStringFromTable(@"Expected URL to be a file URL", @"AFNetworking", nil)};
         if (error) {
             *error = [[NSError alloc] initWithDomain:AFURLRequestSerializationErrorDomain code:NSURLErrorBadURL userInfo:userInfo];
         }
 
         return NO;
-    } else if ([fileURL checkResourceIsReachableAndReturnError:error] == NO) {
+    } else if ([fileURL checkResourceIsReachableAndReturnError:error] == NO) {//检查文件是否存在
+        
         NSDictionary *userInfo = @{NSLocalizedFailureReasonErrorKey: NSLocalizedStringFromTable(@"File URL not reachable.", @"AFNetworking", nil)};
         if (error) {
             *error = [[NSError alloc] initWithDomain:AFURLRequestSerializationErrorDomain code:NSURLErrorBadURL userInfo:userInfo];
@@ -782,6 +786,26 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
         return NO;
     }
 
+    
+    /*
+     
+     NSFileCreationDate = "2016-06-14 03:10:58 +0000";
+     NSFileExtensionHidden = 0;
+     NSFileGroupOwnerAccountID = 20;
+     NSFileGroupOwnerAccountName = staff;
+     NSFileHFSCreatorCode = 0;
+     NSFileHFSTypeCode = 0;
+     NSFileModificationDate = "2016-06-14 03:10:58 +0000";
+     NSFileOwnerAccountID = 501;
+     NSFileOwnerAccountName = xian;
+     NSFilePosixPermissions = 420;
+     NSFileReferenceCount = 1;
+     NSFileSize = 323;
+     NSFileSystemFileNumber = 27014079;
+     NSFileSystemNumber = 16777220;
+     NSFileType = NSFileTypeRegular;
+     
+     */
     NSDictionary *fileAttributes = [[NSFileManager defaultManager] attributesOfItemAtPath:[fileURL path] error:error];
     if (!fileAttributes) {
         return NO;
@@ -797,11 +821,13 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     bodyPart.boundary = self.boundary;
     bodyPart.body = fileURL;
     bodyPart.bodyContentLength = [fileAttributes[NSFileSize] unsignedLongLongValue];
+    //加入到AFMultipartBodyStream中
     [self.bodyStream appendHTTPBodyPart:bodyPart];
 
     return YES;
 }
 
+///inputStream要指定长度
 - (void)appendPartWithInputStream:(NSInputStream *)inputStream
                              name:(NSString *)name
                          fileName:(NSString *)fileName
@@ -826,7 +852,10 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 
     [self.bodyStream appendHTTPBodyPart:bodyPart];
 }
-
+/*
+ 调用- (void)appendPartWithHeaders:(NSDictionary *)headers
+ body:(NSData *)body
+ */
 - (void)appendPartWithFileData:(NSData *)data
                           name:(NSString *)name
                       fileName:(NSString *)fileName
@@ -842,7 +871,10 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 
     [self appendPartWithHeaders:mutableHeaders body:data];
 }
-
+/*
+ 调用- (void)appendPartWithHeaders:(NSDictionary *)headers
+ body:(NSData *)body
+ */
 - (void)appendPartWithFormData:(NSData *)data
                           name:(NSString *)name
 {
@@ -853,7 +885,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 
     [self appendPartWithHeaders:mutableHeaders body:data];
 }
-
+///NSData型AFHTTPBodyPart
 - (void)appendPartWithHeaders:(NSDictionary *)headers
                          body:(NSData *)body
 {
@@ -869,6 +901,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     [self.bodyStream appendHTTPBodyPart:bodyPart];
 }
 
+///r
 - (void)throttleBandwidthWithPacketSize:(NSUInteger)numberOfBytes
                                   delay:(NSTimeInterval)delay
 {
@@ -876,16 +909,20 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     self.bodyStream.delay = delay;
 }
 
+///r
 - (NSMutableURLRequest *)requestByFinalizingMultipartFormData {
     if ([self.bodyStream isEmpty]) {
         return self.request;
     }
 
     // Reset the initial and final boundaries to ensure correct Content-Length
+    ///请求体
     [self.bodyStream setInitialAndFinalBoundaries];
     [self.request setHTTPBodyStream:self.bodyStream];
 
+    //请求头
     [self.request setValue:[NSString stringWithFormat:@"multipart/form-data; boundary=%@", self.boundary] forHTTPHeaderField:@"Content-Type"];
+    //长度与numberOfBytesInPacket无关
     [self.request setValue:[NSString stringWithFormat:@"%llu", [self.bodyStream contentLength]] forHTTPHeaderField:@"Content-Length"];
 
     return self.request;
@@ -1246,7 +1283,7 @@ typedef enum {
     if (_phase == AFBodyPhase) {
         NSInteger numberOfBytesRead = 0;
 
-        //buffer指针偏移totalNumberOfBytesRead后开始读取  一口气全读十几Kb
+        //buffer指针偏移totalNumberOfBytesRead后开始读取  一口气全读
         numberOfBytesRead = [self.inputStream read:&buffer[totalNumberOfBytesRead] maxLength:(length - (NSUInteger)totalNumberOfBytesRead)];
         if (numberOfBytesRead == -1) {
             return -1;

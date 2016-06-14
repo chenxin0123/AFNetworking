@@ -37,6 +37,11 @@
 //
 @interface AFHTTPBodyPart : NSObject
 @property (nonatomic, assign) NSStringEncoding stringEncoding;
+/*
+ NSMutableDictionary *mutableHeaders = [NSMutableDictionary dictionary];
+ [mutableHeaders setValue:[NSString stringWithFormat:@"form-data; name=\"%@\"; filename=\"%@\"", name, fileName] forKey:@"Content-Disposition"];
+ [mutableHeaders setValue:mimeType forKey:@"Content-Type"];
+ */
 @property (nonatomic, strong) NSDictionary *headers;
 @property (nonatomic, copy) NSString *boundary;
 @property (nonatomic, strong) id body;
