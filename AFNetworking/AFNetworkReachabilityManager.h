@@ -24,10 +24,11 @@
 #if !TARGET_OS_WATCH
 #import <SystemConfiguration/SystemConfiguration.h>
 
+///网络状态
 typedef NS_ENUM(NSInteger, AFNetworkReachabilityStatus) {
     AFNetworkReachabilityStatusUnknown          = -1,
     AFNetworkReachabilityStatusNotReachable     = 0,
-    AFNetworkReachabilityStatusReachableViaWWAN = 1,
+    AFNetworkReachabilityStatusReachableViaWWAN = 1,//Wireless Wide Area Network，无线广域网 手机网络
     AFNetworkReachabilityStatusReachableViaWiFi = 2,
 };
 
@@ -86,6 +87,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param domain The domain used to evaluate network reachability.
 
  @return An initialized network reachability manager, actively monitoring the specified domain.
+ 
+ 监听指定域名
+ 
  */
 + (instancetype)managerForDomain:(NSString *)domain;
 
@@ -95,6 +99,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param address The socket address (`sockaddr_in6`) used to evaluate network reachability.
 
  @return An initialized network reachability manager, actively monitoring the specified socket address.
+ 
+ 监听指定地址sockaddr_in6
+ 
  */
 + (instancetype)managerForAddress:(const void *)address;
 
@@ -104,6 +111,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param reachability The reachability object to monitor.
 
  @return An initialized network reachability manager, actively monitoring the specified reachability.
+ 
+ 指定网络类型
+ 
  */
 - (instancetype)initWithReachability:(SCNetworkReachabilityRef)reachability NS_DESIGNATED_INITIALIZER;
 
@@ -127,6 +137,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Returns a localized string representation of the current network reachability status.
+ 
+ 本地化的网络状态描述文本 内部调用AFStringFromNetworkReachabilityStatus
+ 
  */
 - (NSString *)localizedNetworkReachabilityStatusString;
 
@@ -138,6 +151,10 @@ NS_ASSUME_NONNULL_BEGIN
  Sets a callback to be executed when the network availability of the `baseURL` host changes.
 
  @param block A block object to be executed when the network availability of the `baseURL` host changes.. This block has no return value and takes a single argument which represents the various reachability states from the device to the `baseURL`.
+ 
+ 
+ 状态改变的回调
+ 
  */
 - (void)setReachabilityStatusChangeBlock:(nullable void (^)(AFNetworkReachabilityStatus status))block;
 
@@ -191,6 +208,8 @@ NS_ASSUME_NONNULL_BEGIN
  @warning In order for network reachability to be monitored, include the `SystemConfiguration` framework in the active target's "Link Binary With Library" build phase, and add `#import <SystemConfiguration/SystemConfiguration.h>` to the header prefix of the project (`Prefix.pch`).
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingReachabilityDidChangeNotification;
+
+//通知的userinfo中的网络状态key
 FOUNDATION_EXPORT NSString * const AFNetworkingReachabilityNotificationStatusItem;
 
 ///--------------------
@@ -199,6 +218,9 @@ FOUNDATION_EXPORT NSString * const AFNetworkingReachabilityNotificationStatusIte
 
 /**
  Returns a localized string representation of an `AFNetworkReachabilityStatus` value.
+ 
+ 返回本地化网络状态描述
+ 
  */
 FOUNDATION_EXPORT NSString * AFStringFromNetworkReachabilityStatus(AFNetworkReachabilityStatus status);
 

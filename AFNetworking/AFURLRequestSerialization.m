@@ -188,7 +188,7 @@ NSArray * AFQueryStringPairsFromKeyAndValue(NSString *key, id value) {
 @end
 
 #pragma mark -
-///关闭自动kvo的keys
+///关闭自动kvo的keys 这些key是NSMutableURLRequest拥有的属性 通过监听这些值的改变 这返回NSMutableURLRequest时将NSMutableURLRequest的属性设为对应值
 static NSArray * AFHTTPRequestSerializerObservedKeyPaths() {
     static NSArray *_AFHTTPRequestSerializerObservedKeyPaths = nil;
     static dispatch_once_t onceToken;
@@ -199,22 +199,28 @@ static NSArray * AFHTTPRequestSerializerObservedKeyPaths() {
     return _AFHTTPRequestSerializerObservedKeyPaths;
 }
 
+///顾名思义
 static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerObserverContext;
 
 @interface AFHTTPRequestSerializer ()
+
+///已观察到的有变化的字段AFHTTPRequestSerializerObservedKeyPaths
 @property (readwrite, nonatomic, strong) NSMutableSet *mutableObservedChangedKeyPaths;
+///请求头字段
 @property (readwrite, nonatomic, strong) NSMutableDictionary *mutableHTTPRequestHeaders;
+///并行队列
 @property (readwrite, nonatomic, strong) dispatch_queue_t requestHeaderModificationQueue;
 @property (readwrite, nonatomic, assign) AFHTTPRequestQueryStringSerializationStyle queryStringSerializationStyle;
+///解析参数的block 默认使用AFQueryStringFromParameters()
 @property (readwrite, nonatomic, copy) AFQueryStringSerializationBlock queryStringSerialization;
 @end
 
 @implementation AFHTTPRequestSerializer
-
+///r
 + (instancetype)serializer {
     return [[self alloc] init];
 }
-
+///r
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -222,20 +228,26 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
     }
 
     self.stringEncoding = NSUTF8StringEncoding;
-
+    //请求头默认为空
     self.mutableHTTPRequestHeaders = [NSMutableDictionary dictionary];
     self.requestHeaderModificationQueue = dispatch_queue_create("requestHeaderModificationQueue", DISPATCH_QUEUE_CONCURRENT);
 
     // Accept-Language HTTP Header; see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
+    // 可接受的语言类型 如果不提供 默认所有语言皆为可接受
     NSMutableArray *acceptLanguagesComponents = [NSMutableArray array];
+    // each string is a language ID
     [[NSLocale preferredLanguages] enumerateObjectsUsingBlock:^(id obj, NSUInteger idx, BOOL *stop) {
         float q = 1.0f - (idx * 0.1f);
+        ///%g表示自动选择合适的表示法输出
+        //q:quality value which represents an estimate of the user's preference for the languages specified by that range
         [acceptLanguagesComponents addObject:[NSString stringWithFormat:@"%@;q=%0.1g", obj, q]];
         *stop = q <= 0.5f;
     }];
+    
     [self setValue:[acceptLanguagesComponents componentsJoinedByString:@", "] forHTTPHeaderField:@"Accept-Language"];
 
     NSString *userAgent = nil;
+    //User-Agent 主要用于统计目的的字符串  ouyu/3.0.1 (iPhone; iOS 9.3; Scale/3.00)
 #if TARGET_OS_IOS
     // User-Agent Header; see http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.43
     userAgent = [NSString stringWithFormat:@"%@/%@ (%@; iOS %@; Scale/%0.2f)", [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleExecutableKey] ?: [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleIdentifierKey], [[NSBundle mainBundle] infoDictionary][@"CFBundleShortVersionString"] ?: [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey], [[UIDevice currentDevice] model], [[UIDevice currentDevice] systemVersion], [[UIScreen mainScreen] scale]];
@@ -246,6 +258,7 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
     userAgent = [NSString stringWithFormat:@"%@/%@ (Mac OS X %@)", [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleExecutableKey] ?: [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleIdentifierKey], [[NSBundle mainBundle] infoDictionary][@"CFBundleShortVersionString"] ?: [[NSBundle mainBundle] infoDictionary][(__bridge NSString *)kCFBundleVersionKey], [[NSProcessInfo processInfo] operatingSystemVersionString]];
 #endif
     if (userAgent) {
+        //可以的话 转为ascii码
         if (![userAgent canBeConvertedToEncoding:NSASCIIStringEncoding]) {
             NSMutableString *mutableUserAgent = [userAgent mutableCopy];
             if (CFStringTransform((__bridge CFMutableStringRef)(mutableUserAgent), NULL, (__bridge CFStringRef)@"Any-Latin; Latin-ASCII; [:^ASCII:] Remove", false)) {
@@ -256,18 +269,21 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
     }
 
     // HTTP Method Definitions; see http://www.w3.org/Protocols/rfc2616/rfc2616-sec9.html
+    //这三种情况 将直接从url上解析参数
     self.HTTPMethodsEncodingParametersInURI = [NSSet setWithObjects:@"GET", @"HEAD", @"DELETE", nil];
-
+    
+    //KVO
     self.mutableObservedChangedKeyPaths = [NSMutableSet set];
     for (NSString *keyPath in AFHTTPRequestSerializerObservedKeyPaths()) {
         if ([self respondsToSelector:NSSelectorFromString(keyPath)]) {
             [self addObserver:self forKeyPath:keyPath options:NSKeyValueObservingOptionNew context:AFHTTPRequestSerializerObserverContext];
         }
     }
-
+    
     return self;
 }
 
+///r
 - (void)dealloc {
     for (NSString *keyPath in AFHTTPRequestSerializerObservedKeyPaths()) {
         if ([self respondsToSelector:NSSelectorFromString(keyPath)]) {
@@ -319,7 +335,7 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
 }
 
 #pragma mark -
-
+//r
 - (NSDictionary *)HTTPRequestHeaders {
     NSDictionary __block *value;
     dispatch_sync(self.requestHeaderModificationQueue, ^{
@@ -328,6 +344,7 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
     return value;
 }
 
+///dispatch_barrier_async 向mutableHTTPRequestHeaders添加请求头字段
 - (void)setValue:(NSString *)value
 forHTTPHeaderField:(NSString *)field
 {
@@ -335,23 +352,25 @@ forHTTPHeaderField:(NSString *)field
         [self.mutableHTTPRequestHeaders setValue:value forKey:field];
     });
 }
-
+///r
 - (NSString *)valueForHTTPHeaderField:(NSString *)field {
     NSString __block *value;
+    //因为要使用value值 所以sync等待block被执行再返回
     dispatch_sync(self.requestHeaderModificationQueue, ^{
         value = [self.mutableHTTPRequestHeaders valueForKey:field];
     });
     return value;
 }
-
+///r
 - (void)setAuthorizationHeaderFieldWithUsername:(NSString *)username
                                        password:(NSString *)password
 {
+    
     NSData *basicAuthCredentials = [[NSString stringWithFormat:@"%@:%@", username, password] dataUsingEncoding:NSUTF8StringEncoding];
     NSString *base64AuthCredentials = [basicAuthCredentials base64EncodedStringWithOptions:(NSDataBase64EncodingOptions)0];
     [self setValue:[NSString stringWithFormat:@"Basic %@", base64AuthCredentials] forHTTPHeaderField:@"Authorization"];
 }
-
+///r
 - (void)clearAuthorizationHeader {
     dispatch_barrier_async(self.requestHeaderModificationQueue, ^{
         [self.mutableHTTPRequestHeaders removeObjectForKey:@"Authorization"];
@@ -359,18 +378,18 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark -
-
+///r
 - (void)setQueryStringSerializationWithStyle:(AFHTTPRequestQueryStringSerializationStyle)style {
     self.queryStringSerializationStyle = style;
     self.queryStringSerialization = nil;
 }
-
+///r
 - (void)setQueryStringSerializationWithBlock:(NSString *(^)(NSURLRequest *, id, NSError *__autoreleasing *))block {
     self.queryStringSerialization = block;
 }
 
 #pragma mark -
-
+//r
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                  URLString:(NSString *)URLString
                                 parameters:(id)parameters
@@ -379,6 +398,7 @@ forHTTPHeaderField:(NSString *)field
     NSParameterAssert(method);
     NSParameterAssert(URLString);
 
+    //If the URL string was malformed or nil, returns nil.
     NSURL *url = [NSURL URLWithString:URLString];
 
     NSParameterAssert(url);
@@ -386,6 +406,7 @@ forHTTPHeaderField:(NSString *)field
     NSMutableURLRequest *mutableRequest = [[NSMutableURLRequest alloc] initWithURL:url];
     mutableRequest.HTTPMethod = method;
 
+    //观察到的有变的属性
     for (NSString *keyPath in AFHTTPRequestSerializerObservedKeyPaths()) {
         if ([self.mutableObservedChangedKeyPaths containsObject:keyPath]) {
             [mutableRequest setValue:[self valueForKeyPath:keyPath] forKey:keyPath];
@@ -397,6 +418,7 @@ forHTTPHeaderField:(NSString *)field
 	return mutableRequest;
 }
 
+///http://www.w3.org/TR/html4/interact/forms.html#h-17.13.4.2
 - (NSMutableURLRequest *)multipartFormRequestWithMethod:(NSString *)method
                                               URLString:(NSString *)URLString
                                              parameters:(NSDictionary *)parameters
@@ -411,6 +433,7 @@ forHTTPHeaderField:(NSString *)field
     __block AFStreamingMultipartFormData *formData = [[AFStreamingMultipartFormData alloc] initWithURLRequest:mutableRequest stringEncoding:NSUTF8StringEncoding];
 
     if (parameters) {
+        //遍历AFQueryStringPair数组
         for (AFQueryStringPair *pair in AFQueryStringPairsFromDictionary(parameters)) {
             NSData *data = nil;
             if ([pair.value isKindOfClass:[NSData class]]) {
@@ -422,18 +445,19 @@ forHTTPHeaderField:(NSString *)field
             }
 
             if (data) {
+                //参数每个字段为一个AFHTTPBodyPart
                 [formData appendPartWithFormData:data name:[pair.field description]];
             }
         }
     }
-
+    //一般用户在这里append数据
     if (block) {
         block(formData);
     }
 
     return [formData requestByFinalizingMultipartFormData];
 }
-
+///r
 - (NSMutableURLRequest *)requestWithMultipartFormRequest:(NSURLRequest *)request
                              writingStreamContentsToFile:(NSURL *)fileURL
                                        completionHandler:(void (^)(NSError *error))handler
@@ -452,9 +476,10 @@ forHTTPHeaderField:(NSString *)field
         [inputStream open];
         [outputStream open];
 
+        //循环将inputStream写入文件
         while ([inputStream hasBytesAvailable] && [outputStream hasSpaceAvailable]) {
             uint8_t buffer[1024];
-
+            //一次读1kb
             NSInteger bytesRead = [inputStream read:buffer maxLength:1024];
             if (inputStream.streamError || bytesRead < 0) {
                 error = inputStream.streamError;
@@ -489,7 +514,7 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark - AFURLRequestSerialization
-
+///r
 - (NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
                                withParameters:(id)parameters
                                         error:(NSError *__autoreleasing *)error
@@ -498,12 +523,14 @@ forHTTPHeaderField:(NSString *)field
 
     NSMutableURLRequest *mutableRequest = [request mutableCopy];
 
+    //组装请求头
     [self.HTTPRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
         if (![request valueForHTTPHeaderField:field]) {
             [mutableRequest setValue:value forHTTPHeaderField:field];
         }
     }];
 
+    //请求体
     NSString *query = nil;
     if (parameters) {
         if (self.queryStringSerialization) {
@@ -527,17 +554,21 @@ forHTTPHeaderField:(NSString *)field
     }
 
     if ([self.HTTPMethodsEncodingParametersInURI containsObject:[[request HTTPMethod] uppercaseString]]) {
+        //拼接参数到url
         if (query && query.length > 0) {
             mutableRequest.URL = [NSURL URLWithString:[[mutableRequest.URL absoluteString] stringByAppendingFormat:mutableRequest.URL.query ? @"&%@" : @"?%@", query]];
         }
     } else {
         // #2864: an empty string is a valid x-www-form-urlencoded payload
+        //parameters为nil将使query = @"";
         if (!query) {
             query = @"";
         }
+        
         if (![mutableRequest valueForHTTPHeaderField:@"Content-Type"]) {
             [mutableRequest setValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
         }
+        //请求体就是参数内容
         [mutableRequest setHTTPBody:[query dataUsingEncoding:self.stringEncoding]];
     }
 
@@ -555,6 +586,7 @@ forHTTPHeaderField:(NSString *)field
     return [super automaticallyNotifiesObserversForKey:key];
 }
 
+///r
 - (void)observeValueForKeyPath:(NSString *)keyPath
                       ofObject:(__unused id)object
                         change:(NSDictionary *)change
@@ -570,11 +602,11 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark - NSSecureCoding
-
+///r
 + (BOOL)supportsSecureCoding {
     return YES;
 }
-
+///r
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [self init];
     if (!self) {
@@ -586,7 +618,7 @@ forHTTPHeaderField:(NSString *)field
 
     return self;
 }
-
+///r
 - (void)encodeWithCoder:(NSCoder *)coder {
     dispatch_sync(self.requestHeaderModificationQueue, ^{
         [coder encodeObject:self.mutableHTTPRequestHeaders forKey:NSStringFromSelector(@selector(mutableHTTPRequestHeaders))];
@@ -595,10 +627,11 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark - NSCopying
-
+///r
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFHTTPRequestSerializer *serializer = [[[self class] allocWithZone:zone] init];
     dispatch_sync(self.requestHeaderModificationQueue, ^{
+        //zone This parameter is ignored. Memory zones are no longer used by Objective-C
         serializer.mutableHTTPRequestHeaders = [self.mutableHTTPRequestHeaders mutableCopyWithZone:zone];
     });
     serializer.queryStringSerializationStyle = self.queryStringSerializationStyle;
@@ -909,7 +942,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     self.bodyStream.delay = delay;
 }
 
-///r
+///设置请求体为bodyStream 以及设置请求体相关字段
 - (NSMutableURLRequest *)requestByFinalizingMultipartFormData {
     if ([self.bodyStream isEmpty]) {
         return self.request;
@@ -918,6 +951,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     // Reset the initial and final boundaries to ensure correct Content-Length
     ///请求体
     [self.bodyStream setInitialAndFinalBoundaries];
+    //Setting a body stream clears any data in HTTPBody
     [self.request setHTTPBodyStream:self.bodyStream];
 
     //请求头
@@ -1376,11 +1410,11 @@ typedef enum {
 #pragma mark -
 
 @implementation AFJSONRequestSerializer
-
+///r
 + (instancetype)serializer {
     return [self serializerWithWritingOptions:(NSJSONWritingOptions)0];
 }
-
+///r
 + (instancetype)serializerWithWritingOptions:(NSJSONWritingOptions)writingOptions
 {
     AFJSONRequestSerializer *serializer = [[self alloc] init];
@@ -1390,30 +1424,33 @@ typedef enum {
 }
 
 #pragma mark - AFURLRequestSerialization
-
+///使用NSJSONSerialization解析参数 设为请求体
 - (NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
                                withParameters:(id)parameters
                                         error:(NSError *__autoreleasing *)error
 {
     NSParameterAssert(request);
 
+    ///GET HEAD DELETE 直接调用父类方法
     if ([self.HTTPMethodsEncodingParametersInURI containsObject:[[request HTTPMethod] uppercaseString]]) {
         return [super requestBySerializingRequest:request withParameters:parameters error:error];
     }
 
     NSMutableURLRequest *mutableRequest = [request mutableCopy];
 
+    //填充请求头
     [self.HTTPRequestHeaders enumerateKeysAndObjectsUsingBlock:^(id field, id value, BOOL * __unused stop) {
         if (![request valueForHTTPHeaderField:field]) {
             [mutableRequest setValue:value forHTTPHeaderField:field];
         }
     }];
-
+    
     if (parameters) {
+        //填充请求头中的Content-Type为application/json
         if (![mutableRequest valueForHTTPHeaderField:@"Content-Type"]) {
             [mutableRequest setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
         }
-
+        //设置请求体
         [mutableRequest setHTTPBody:[NSJSONSerialization dataWithJSONObject:parameters options:self.writingOptions error:error]];
     }
 
@@ -1421,7 +1458,7 @@ typedef enum {
 }
 
 #pragma mark - NSSecureCoding
-
+///r
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (!self) {
@@ -1432,7 +1469,7 @@ typedef enum {
 
     return self;
 }
-
+///r
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
 
@@ -1440,7 +1477,7 @@ typedef enum {
 }
 
 #pragma mark - NSCopying
-
+///r
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFJSONRequestSerializer *serializer = [super copyWithZone:zone];
     serializer.writingOptions = self.writingOptions;
@@ -1453,11 +1490,11 @@ typedef enum {
 #pragma mark -
 
 @implementation AFPropertyListRequestSerializer
-
+///r
 + (instancetype)serializer {
     return [self serializerWithFormat:NSPropertyListXMLFormat_v1_0 writeOptions:0];
 }
-
+///r
 + (instancetype)serializerWithFormat:(NSPropertyListFormat)format
                         writeOptions:(NSPropertyListWriteOptions)writeOptions
 {
@@ -1469,7 +1506,7 @@ typedef enum {
 }
 
 #pragma mark - AFURLRequestSerializer
-
+///使用NSPropertyListSerialization解析数据 设为请求体
 - (NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
                                withParameters:(id)parameters
                                         error:(NSError *__autoreleasing *)error
@@ -1500,7 +1537,7 @@ typedef enum {
 }
 
 #pragma mark - NSSecureCoding
-
+///r
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (!self) {
@@ -1512,7 +1549,7 @@ typedef enum {
 
     return self;
 }
-
+///r
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
 
@@ -1521,7 +1558,7 @@ typedef enum {
 }
 
 #pragma mark - NSCopying
-
+///r
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFPropertyListRequestSerializer *serializer = [super copyWithZone:zone];
     serializer.format = self.format;

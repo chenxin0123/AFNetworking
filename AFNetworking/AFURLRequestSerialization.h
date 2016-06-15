@@ -179,7 +179,7 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
 
  @discussion To add or remove default request headers, use `setValue:forHTTPHeaderField:`.
  
- 提供默认的请求头字段
+返回mutableHTTPRequestHeaders的不可变拷贝
  */
 @property (readonly, nonatomic, strong) NSDictionary <NSString *, NSString *> *HTTPRequestHeaders;
 
@@ -194,7 +194,7 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  @param field The HTTP header to set a default value for
  @param value The value set as default for the specified header, or `nil`
  
- 给请求头添加字段 设为nil则移除已有字段
+ dispatch_barrier_async 给请求头添加字段 设为nil则移除已有字段 
  */
 - (void)setValue:(nullable NSString *)value
 forHTTPHeaderField:(NSString *)field;
@@ -205,6 +205,9 @@ forHTTPHeaderField:(NSString *)field;
  @param field The HTTP header to retrieve the default value for
 
  @return The value set as default for the specified header, or `nil`
+ 
+ 从mutableHTTPRequestHeaders中取
+ 
  */
 - (nullable NSString *)valueForHTTPHeaderField:(NSString *)field;
 
@@ -213,6 +216,8 @@ forHTTPHeaderField:(NSString *)field;
 
  @param username The HTTP basic auth username
  @param password The HTTP basic auth password
+ 
+ 设置基本认证的请求头
  
  基本认证机制 在你访问一个需要HTTP Basic Authentication的URL的时候，如果你没有提供用户名和密码，服务器就会返回401，如果你直接在浏览器中打开，浏览器会提示你输入用户名和密码
  
@@ -240,7 +245,7 @@ forHTTPHeaderField:(NSString *)field;
 /**
  HTTP methods for which serialized requests will encode parameters as a query string. `GET`, `HEAD`, and `DELETE` by default.
  
- 那些情况下 请求的参数将被编码成字符串
+ 哪些情况下 请求的参数将被编码成字符串
  
  */
 @property (nonatomic, strong) NSSet <NSString *> *HTTPMethodsEncodingParametersInURI;
@@ -252,7 +257,7 @@ forHTTPHeaderField:(NSString *)field;
 
  @see AFHTTPRequestQueryStringSerializationStyle
  
- 只有一个0。。。//???
+ 只有一个0 使用AFQueryStringFromParameters()解析参数 优先级低于queryStringSerialization 但是方法内会把queryStringSerialization清空
  
  */
 - (void)setQueryStringSerializationWithStyle:(AFHTTPRequestQueryStringSerializationStyle)style;
@@ -261,7 +266,7 @@ forHTTPHeaderField:(NSString *)field;
  Set the a custom method of query string serialization according to the specified block.
 
  @param block A block that defines a process of encoding parameters into a query string. This block returns the query string and takes three arguments: the request, the parameters to encode, and the error that occurred when attempting to encode parameters for the given request.
- //???
+ // 解析参数的block 优先于AFHTTPRequestQueryStringSerializationStyle
  */
 - (void)setQueryStringSerializationWithBlock:(nullable NSString * (^)(NSURLRequest *request, id parameters, NSError * __autoreleasing *error))block;
 
@@ -280,6 +285,9 @@ forHTTPHeaderField:(NSString *)field;
  @param error The error that occurred while constructing the request.
 
  @return An `NSMutableURLRequest` object.
+ 
+ r
+ 
  */
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                  URLString:(NSString *)URLString
@@ -315,6 +323,9 @@ forHTTPHeaderField:(NSString *)field;
  @discussion There is a bug in `NSURLSessionTask` that causes requests to not send a `Content-Length` header when streaming contents from an HTTP body, which is notably problematic when interacting with the Amazon S3 webservice. As a workaround, this method takes a request constructed with `multipartFormRequestWithMethod:URLString:parameters:constructingBodyWithBlock:error:`, or any other request with an `HTTPBodyStream`, writes the contents to the specified file and returns a copy of the original request with the `HTTPBodyStream` property set to `nil`. From here, the file can either be passed to `AFURLSessionManager -uploadTaskWithRequest:fromFile:progress:completionHandler:`, or have its contents read into an `NSData` that's assigned to the `HTTPBody` property of the request.
 
  @see https://github.com/AFNetworking/AFNetworking/issues/1398
+ 
+ 解决bug用的 将HTTPBodyStream移除 然后异步的将其内容写入指定文件
+ 
  */
 - (NSMutableURLRequest *)requestWithMultipartFormRequest:(NSURLRequest *)request
                              writingStreamContentsToFile:(NSURL *)fileURL

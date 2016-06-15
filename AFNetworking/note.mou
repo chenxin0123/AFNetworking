@@ -24,9 +24,10 @@ AFHTTPRequestSerializer实现了该协议,以下均派生自AFHTTPRequestSeriali
 ######@AFHTTPBodyPart
 相当于一个multi-part请求体的一个段
 ######@AFMultipartBodyStream
-封装了整个multipart数据的读取
+NSInputStream子类 封装了整个multipart数据的读取 持有一个AFHTTPBodyPart数组
 ######@AFStreamingMultipartFormData
-把数据转成不同类型的AFHTTPBodyPart，添加到自定义的AFMultipartBodyStream属性
+把数据转成的AFHTTPBodyPart，添加到自定义的AFMultipartBodyStream类型属性bodyStream中,最终调用`[self.request setHTTPBodyStream:self.bodyStream];`
+
 ######
 ######
 ######
