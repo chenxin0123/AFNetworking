@@ -22,10 +22,17 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
+/*
+ SSL（Secure Sockets Layer）早期
+ TLS（Transport Layer Security）
+ 其实我们现在使用的都是TLS 但SSL还是HTTPS的代名词
+ */
+
+
 typedef NS_ENUM(NSUInteger, AFSSLPinningMode) {
-    AFSSLPinningModeNone,
-    AFSSLPinningModePublicKey,
-    AFSSLPinningModeCertificate,
+    AFSSLPinningModeNone,//只会在系统的信任的证书列表中对服务端返回的证书进行验证
+    AFSSLPinningModePublicKey,//需要预先保存服务端发送的证书，但是这里只会验证证书中的公钥是否正确
+    AFSSLPinningModeCertificate,//需要客户端预先保存服务端的证书
 };
 
 /**

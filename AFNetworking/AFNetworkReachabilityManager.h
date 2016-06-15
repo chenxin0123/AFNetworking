@@ -42,6 +42,9 @@ NS_ASSUME_NONNULL_BEGIN
  See Apple's Reachability Sample Code ( https://developer.apple.com/library/ios/samplecode/reachability/ )
 
  @warning Instances of `AFNetworkReachabilityManager` must be started with `-startMonitoring` before reachability status can be determined.
+ 
+ SCNetworkReachability.h
+ 
  */
 @interface AFNetworkReachabilityManager : NSObject
 
