@@ -26,6 +26,8 @@
  SSL（Secure Sockets Layer）早期
  TLS（Transport Layer Security）
  其实我们现在使用的都是TLS 但SSL还是HTTPS的代名词
+ 
+ SSL Pinning 可以理解为证书绑定 客户端直接保存服务端的证书 小企业或个人用户可能会选择自己颁发证书，这样就无法通过系统受信任的CA机构列表验证这个证书的真伪了，所以需要SSL Pinning这样的方式去验证
  */
 
 
@@ -43,6 +45,9 @@ typedef NS_ENUM(NSUInteger, AFSSLPinningMode) {
 
 NS_ASSUME_NONNULL_BEGIN
 
+/**
+ *  AFSecurityPolicy封装了证书验证的过程，让用户可以轻易使用，除了去系统信任CA机构列表验证，还支持SSL Pinning方式的验证
+ */
 @interface AFSecurityPolicy : NSObject <NSSecureCoding, NSCopying>
 
 /**
@@ -56,16 +61,22 @@ NS_ASSUME_NONNULL_BEGIN
   By default, this property is set to any (`.cer`) certificates included in the target compiling AFNetworking. Note that if you are using AFNetworking as embedded framework, no certificates will be pinned by default. Use `certificatesInBundle` to load certificates from your target, and then create a new policy by calling `policyWithPinningMode:withPinnedCertificates`.
  
  Note that if pinning is enabled, `evaluateServerTrust:forDomain:` will return true if any pinned certificate matches.
+ 
+ AFNetworking会自动寻找在mainBundle的根目录下所有的.cer文件并保存在pinnedCertificates数组里，以校验服务器返回的证书。
  */
 @property (nonatomic, strong, nullable) NSSet <NSData *> *pinnedCertificates;
 
 /**
  Whether or not to trust servers with an invalid or expired SSL certificates. Defaults to `NO`.
+ 
+ 是否信任非法证书
  */
 @property (nonatomic, assign) BOOL allowInvalidCertificates;
 
 /**
  Whether or not to validate the domain name in the certificate's CN field. Defaults to `YES`.
+ 
+ 是否校验在证书中的domain这一个字段
  */
 @property (nonatomic, assign) BOOL validatesDomainName;
 
@@ -77,6 +88,7 @@ NS_ASSUME_NONNULL_BEGIN
  Returns any certificates included in the bundle. If you are using AFNetworking as an embedded framework, you must use this method to find the certificates you have included in your app bundle, and use them when creating your security policy by calling `policyWithPinningMode:withPinnedCertificates`.
 
  @return The certificates included in the given bundle.
+ 
  */
 + (NSSet <NSData *> *)certificatesInBundle:(NSBundle *)bundle;
 
@@ -88,6 +100,9 @@ NS_ASSUME_NONNULL_BEGIN
  Returns the shared default security policy, which does not allow invalid certificates, validates domain name, and does not validate against pinned certificates or public keys.
 
  @return The default security policy.
+ 
+ 默认 不验证证书绑定 不允许无效证书 验证域名
+ 
  */
 + (instancetype)defaultPolicy;
 

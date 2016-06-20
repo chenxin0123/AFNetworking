@@ -316,12 +316,13 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
     [self didChangeValueForKey:NSStringFromSelector(@selector(HTTPShouldHandleCookies))];
 }
 
+//HTTPShouldUsePipelining 这个属性在 NSMutableURLRequest 下也有，它可以被用于开启 HTTP 管线化（HTTP pipelining），这可以显着降低请求的加载时间，但是由于没有被服务器广泛支持，默认是禁用的。
 - (void)setHTTPShouldUsePipelining:(BOOL)HTTPShouldUsePipelining {
     [self willChangeValueForKey:NSStringFromSelector(@selector(HTTPShouldUsePipelining))];
     _HTTPShouldUsePipelining = HTTPShouldUsePipelining;
     [self didChangeValueForKey:NSStringFromSelector(@selector(HTTPShouldUsePipelining))];
 }
-
+//对标准的网络流量，网络电话，语音，视频，以及由一个后台进程使用的流量进行了区分。
 - (void)setNetworkServiceType:(NSURLRequestNetworkServiceType)networkServiceType {
     [self willChangeValueForKey:NSStringFromSelector(@selector(networkServiceType))];
     _networkServiceType = networkServiceType;

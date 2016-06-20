@@ -86,7 +86,11 @@
  */
 
 NS_ASSUME_NONNULL_BEGIN
-
+/** 
+ NSURLSessionTaskDelegate遵守NSURLSessionDelegate
+ NSURLSessionDataDelegate遵守NSURLSessionTaskDelegate 
+ NSURLSessionDownloadDelegate遵守NSURLSessionTaskDelegate 通常用于下载大量数据
+ */
 @interface AFURLSessionManager : NSObject <NSURLSessionDelegate, NSURLSessionTaskDelegate, NSURLSessionDataDelegate, NSURLSessionDownloadDelegate, NSSecureCoding, NSCopying>
 
 /**
@@ -96,6 +100,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  The operation queue on which delegate callbacks are run.
+ 
+ maxConcurrentOperationCount=1
+ 
  */
 @property (readonly, nonatomic, strong) NSOperationQueue *operationQueue;
 
@@ -132,6 +139,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  The data, upload, and download tasks currently run by the managed session.
+ 
+ task是由创建的 NSURLSession
+ 
  */
 @property (readonly, nonatomic, strong) NSArray <NSURLSessionTask *> *tasks;
 
@@ -142,11 +152,20 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  The upload tasks currently run by the managed session.
+ 
+ Upload task 的创建需要使用一个 request，另外加上一个要上传的 NSData 对象或者是一个本地文件的路径对应的 NSURL
+ 
  */
 @property (readonly, nonatomic, strong) NSArray <NSURLSessionUploadTask *> *uploadTasks;
 
 /**
  The download tasks currently run by the managed session.
+ 
+ Download task 也需要一个 request 
+ 
+ 不同之处在于 completionHandler 这个 block。Data task 和 upload task 会在任务完成时一次性返回，但是 Download task 是将数据一点点地写入本地的临时文件
+ 所以在 completionHandler 这个 block 里，我们需要把文件从一个临时地址移动到一个永久的地址保存起来
+ 
  */
 @property (readonly, nonatomic, strong) NSArray <NSURLSessionDownloadTask *> *downloadTasks;
 
@@ -449,46 +468,73 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  Posted when a task resumes.
+ 
+ 开始任务
+ 
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingTaskDidResumeNotification;
 
 /**
  Posted when a task finishes executing. Includes a userInfo dictionary with additional information about the task.
+ 
+ 完成任务
+ 
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingTaskDidCompleteNotification;
 
 /**
  Posted when a task suspends its execution.
+ 
+ 任务挂起
+ 
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingTaskDidSuspendNotification;
 
 /**
  Posted when a session is invalidated.
+ 
+ session无效
+ 
  */
 FOUNDATION_EXPORT NSString * const AFURLSessionDidInvalidateNotification;
 
 /**
  Posted when a session download task encountered an error when moving the temporary download file to a specified destination.
+ 
+ 将下载的临时文件移到目标文件时出错
+ 
  */
 FOUNDATION_EXPORT NSString * const AFURLSessionDownloadTaskDidFailToMoveFileNotification;
 
 /**
  The raw response data of the task. Included in the userInfo dictionary of the `AFNetworkingTaskDidCompleteNotification` if response data exists for the task.
+ 
+ AFNetworkingTaskDidCompleteNotification的userinfo中的key value是raw response data
+ 
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingTaskDidCompleteResponseDataKey;
 
 /**
  The serialized response object of the task. Included in the userInfo dictionary of the `AFNetworkingTaskDidCompleteNotification` if the response was serialized.
+ 
+ AFNetworkingTaskDidCompleteNotification中userinfo的key value是serialized response objec
+ 
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingTaskDidCompleteSerializedResponseKey;
 
 /**
  The response serializer used to serialize the response. Included in the userInfo dictionary of the `AFNetworkingTaskDidCompleteNotification` if the task has an associated response serializer.
+ 
+ AFNetworkingTaskDidCompleteNotification中的userinfo的key value是response serializer
+ 
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingTaskDidCompleteResponseSerializerKey;
 
 /**
  The file path associated with the download task. Included in the userInfo dictionary of the `AFNetworkingTaskDidCompleteNotification` if an the response data has been stored directly to disk.
+ 
+ AFNetworkingTaskDidCompleteNotification中下载的文件路径
+ 
  */
 FOUNDATION_EXPORT NSString * const AFNetworkingTaskDidCompleteAssetPathKey;
 
