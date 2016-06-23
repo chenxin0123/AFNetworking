@@ -128,6 +128,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param configuration The configuration used to create the managed session.
 
  @return The newly-initialized HTTP client
+ 
+ 以上的方法最终都会运行到这里
+ 
  */
 - (instancetype)initWithBaseURL:(nullable NSURL *)url
            sessionConfiguration:(nullable NSURLSessionConfiguration *)configuration NS_DESIGNATED_INITIALIZER;
@@ -165,6 +168,7 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:
+ 
  */
 - (nullable NSURLSessionDataTask *)GET:(NSString *)URLString
                             parameters:(nullable id)parameters

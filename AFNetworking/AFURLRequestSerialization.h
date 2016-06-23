@@ -79,7 +79,7 @@ FOUNDATION_EXPORT NSString * AFQueryStringFromParameters(NSDictionary *parameter
 
  @return A serialized request.
  
- 主要是设置请求体 请求头的contentType
+ 主要是设置请求体 请求头的contentType 参数最终都是以NSData的形式赋值给请求体
  
  */
 - (nullable NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
@@ -104,6 +104,7 @@ typedef NS_ENUM(NSUInteger, AFHTTPRequestQueryStringSerializationStyle) {
  `AFHTTPRequestSerializer` conforms to the `AFURLRequestSerialization` & `AFURLResponseSerialization` protocols, offering a concrete base implementation of query string / URL form-encoded parameter serialization and default request headers, as well as response status code and content type validation.
 
  Any request or response serializer dealing with HTTP is encouraged to subclass `AFHTTPRequestSerializer` in order to ensure consistent default behavior.
+ 
  */
 @interface AFHTTPRequestSerializer : NSObject <AFURLRequestSerialization>
 

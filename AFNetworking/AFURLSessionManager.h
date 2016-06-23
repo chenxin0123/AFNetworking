@@ -206,6 +206,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param configuration The configuration used to create the managed session.
 
  @return A manager for a newly-created session.
+ 
+ 创建session 设置代理的运行队列 创建securityPolicy
+ 
  */
 - (instancetype)initWithSessionConfiguration:(nullable NSURLSessionConfiguration *)configuration NS_DESIGNATED_INITIALIZER;
 
