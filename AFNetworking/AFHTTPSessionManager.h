@@ -169,6 +169,8 @@ NS_ASSUME_NONNULL_BEGIN
 
  @see -dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:
  
+ success 带返回的json数据
+ 
  */
 - (nullable NSURLSessionDataTask *)GET:(NSString *)URLString
                             parameters:(nullable id)parameters
@@ -188,7 +190,9 @@ NS_ASSUME_NONNULL_BEGIN
  
  HEAD： 只请求页面的首部。
  
- 如果用HEAD方法请求的话，则服务器返回的只是响应标题，而不会返回被请求的文挡，HEAD方法通用于一些搜索引擎中
+ 如果用HEAD方法请求的话，则服务器返回的只是响应头，无响应体，HEAD方法通用于一些搜索引擎中
+ 
+ success只返回task
  
  */
 - (nullable NSURLSessionDataTask *)HEAD:(NSString *)URLString
