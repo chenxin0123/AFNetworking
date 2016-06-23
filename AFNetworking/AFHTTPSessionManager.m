@@ -160,6 +160,7 @@
     return [self POST:URLString parameters:parameters progress:nil success:success failure:failure];
 }
 
+///r
 - (NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(id)parameters
                       progress:(void (^)(NSProgress * _Nonnull))uploadProgress
@@ -255,6 +256,11 @@
     return dataTask;
 }
 
+/** 先用self.requestSerializer创建一个请求 再调用dataTaskWithRequest。。。创建一个任务
+ 
+ *  在completionHandler中 有错执行failure 成功执行success
+ *  r
+ **/
 - (NSURLSessionDataTask *)dataTaskWithHTTPMethod:(NSString *)method
                                        URLString:(NSString *)URLString
                                       parameters:(id)parameters
@@ -266,6 +272,7 @@
     NSError *serializationError = nil;
     //创建请求
     NSMutableURLRequest *request = [self.requestSerializer requestWithMethod:method URLString:[[NSURL URLWithString:URLString relativeToURL:self.baseURL] absoluteString] parameters:parameters error:&serializationError];
+    
     if (serializationError) {
         if (failure) {
             dispatch_async(self.completionQueue ?: dispatch_get_main_queue(), ^{

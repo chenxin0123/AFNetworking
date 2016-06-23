@@ -290,7 +290,7 @@ forHTTPHeaderField:(NSString *)field;
 
  @return An `NSMutableURLRequest` object.
  
- r
+ //r 调用AFURLRequest协议的[[self requestBySerializingRequest:mutableRequest withParameters:parameters error:error] mutableCopy];方法
  
  */
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
