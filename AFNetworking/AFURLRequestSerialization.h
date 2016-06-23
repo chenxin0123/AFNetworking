@@ -78,6 +78,9 @@ FOUNDATION_EXPORT NSString * AFQueryStringFromParameters(NSDictionary *parameter
  @param error The error that occurred while attempting to encode the request parameters.
 
  @return A serialized request.
+ 
+ 主要是设置请求体 请求头的contentType
+ 
  */
 - (nullable NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
                                withParameters:(nullable id)parameters

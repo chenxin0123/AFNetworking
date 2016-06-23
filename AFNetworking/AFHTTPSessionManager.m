@@ -47,22 +47,27 @@
 @implementation AFHTTPSessionManager
 @dynamic responseSerializer;
 
+///r
 + (instancetype)manager {
     return [[[self class] alloc] initWithBaseURL:nil];
 }
 
+///r
 - (instancetype)init {
     return [self initWithBaseURL:nil];
 }
 
+///r
 - (instancetype)initWithBaseURL:(NSURL *)url {
     return [self initWithBaseURL:url sessionConfiguration:nil];
 }
 
+///r
 - (instancetype)initWithSessionConfiguration:(NSURLSessionConfiguration *)configuration {
     return [self initWithBaseURL:nil sessionConfiguration:configuration];
 }
 
+///以上的方法最终都会运行到这里
 - (instancetype)initWithBaseURL:(NSURL *)url
            sessionConfiguration:(NSURLSessionConfiguration *)configuration
 {
@@ -145,6 +150,7 @@
     return dataTask;
 }
 
+///r
 - (NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(id)parameters
                        success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
@@ -166,6 +172,7 @@
     return dataTask;
 }
 
+///r
 - (NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(nullable id)parameters
      constructingBodyWithBlock:(nullable void (^)(id<AFMultipartFormData> _Nonnull))block

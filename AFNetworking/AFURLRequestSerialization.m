@@ -390,7 +390,7 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark -
-//r
+//r 调用AFURLRequest协议的[[self requestBySerializingRequest:mutableRequest withParameters:parameters error:error] mutableCopy];方法
 - (NSMutableURLRequest *)requestWithMethod:(NSString *)method
                                  URLString:(NSString *)URLString
                                 parameters:(id)parameters
@@ -531,7 +531,7 @@ forHTTPHeaderField:(NSString *)field
         }
     }];
 
-    //请求体
+    //请求体 计算参数是字典 最终都会被解析成拼接形式的字符串
     NSString *query = nil;
     if (parameters) {
         if (self.queryStringSerialization) {
@@ -1425,7 +1425,7 @@ typedef enum {
 }
 
 #pragma mark - AFURLRequestSerialization
-///使用NSJSONSerialization解析参数 设为请求体
+///使用NSJSONSerialization解析参数 设为请求体 基类的requestWithMethod。。。方法中调用
 - (NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
                                withParameters:(id)parameters
                                         error:(NSError *__autoreleasing *)error

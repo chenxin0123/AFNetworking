@@ -69,6 +69,10 @@
  Also important to note is that a trailing slash will be added to any `baseURL` without one. This would otherwise cause unexpected behavior when constructing URLs using paths without a leading slash.
 
  @warning Managers for background sessions must be owned for the duration of their use. This can be accomplished by creating an application-wide or shared singleton instance.
+ 
+ 
+ 在AFURLSessionManager基础上做了封装 使用后可以使用类似requestWithMethod:URLString:parameters:方法 直接通过URL创建请求
+ 
  */
 
 NS_ASSUME_NONNULL_BEGIN
@@ -77,6 +81,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  The URL used to construct requests from relative paths in methods like `requestWithMethod:URLString:parameters:`, and the `GET` / `POST` / et al. convenience methods.
+ 
+ 请求的URL
+ 
  */
 @property (readonly, nonatomic, strong, nullable) NSURL *baseURL;
 
@@ -138,6 +145,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:completionHandler:
+ 
+ 调用下面的方法
+ 
  */
 - (nullable NSURLSessionDataTask *)GET:(NSString *)URLString
                    parameters:(nullable id)parameters
@@ -171,6 +181,11 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:completionHandler:
+ 
+ HEAD： 只请求页面的首部。
+ 
+ 如果用HEAD方法请求的话，则服务器返回的只是响应标题，而不会返回被请求的文挡，HEAD方法通用于一些搜索引擎中
+ 
  */
 - (nullable NSURLSessionDataTask *)HEAD:(NSString *)URLString
                     parameters:(nullable id)parameters
@@ -186,6 +201,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:completionHandler:
+ 
+ 调用下面的方法
+ 
  */
 - (nullable NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(nullable id)parameters
@@ -219,6 +237,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:completionHandler:
+ 
+ 可以用来创建文件上传任务 调用下面的方法
+ 
  */
 - (nullable NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(nullable id)parameters
@@ -237,6 +258,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:uploadProgress:downloadProgress:completionHandler:
+ 
+ 可以用来创建文件上传任务 调用下面的方法
+ 
  */
 - (nullable NSURLSessionDataTask *)POST:(NSString *)URLString
                              parameters:(nullable id)parameters
@@ -254,6 +278,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:completionHandler:
+ 
+ PUT 更新服务器内容 类似update POST 既可以更新也可以创建
+ 
  */
 - (nullable NSURLSessionDataTask *)PUT:(NSString *)URLString
                    parameters:(nullable id)parameters
@@ -269,6 +296,10 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:completionHandler:
+ 
+ PATCH 用于资源的部分内容的更新，例如更新某一个字段。具体比如说只更新用户信息的电话号码字段
+ 而 PUT 用于更新某个资源较完整的内容，比如说用户要重填完整表单更新所有信息，后台处理更新时可能只是保留内部记录 ID 不变。
+ 
  */
 - (nullable NSURLSessionDataTask *)PATCH:(NSString *)URLString
                      parameters:(nullable id)parameters
@@ -284,6 +315,9 @@ NS_ASSUME_NONNULL_BEGIN
  @param failure A block object to be executed when the task finishes unsuccessfully, or that finishes successfully, but encountered an error while parsing the response data. This block has no return value and takes a two arguments: the data task and the error describing the network or parsing error that occurred.
 
  @see -dataTaskWithRequest:completionHandler:
+ 
+ DELETE方法是用来删除URL所指定的资源的
+ 
  */
 - (nullable NSURLSessionDataTask *)DELETE:(NSString *)URLString
                       parameters:(nullable id)parameters
