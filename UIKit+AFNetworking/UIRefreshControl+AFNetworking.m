@@ -37,6 +37,11 @@
 
 @implementation UIRefreshControl (AFNetworking)
 
+
+/**
+ *  获取一个AFRefreshControlNotificationObserver对象 无则创建
+ *
+ */
 - (AFRefreshControlNotificationObserver *)af_notificationObserver {
     AFRefreshControlNotificationObserver *notificationObserver = objc_getAssociatedObject(self, @selector(af_notificationObserver));
     if (notificationObserver == nil) {
@@ -45,6 +50,7 @@
     }
     return notificationObserver;
 }
+
 
 - (void)setRefreshingWithStateOfTask:(NSURLSessionTask *)task {
     [[self af_notificationObserver] setRefreshingWithStateOfTask:task];
@@ -58,6 +64,7 @@
 {
     self = [super init];
     if (self) {
+        //weak
         _refreshControl = refreshControl;
     }
     return self;
@@ -66,11 +73,13 @@
 - (void)setRefreshingWithStateOfTask:(NSURLSessionTask *)task {
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
 
+    //先将之前的移除
     [notificationCenter removeObserver:self name:AFNetworkingTaskDidResumeNotification object:nil];
     [notificationCenter removeObserver:self name:AFNetworkingTaskDidSuspendNotification object:nil];
     [notificationCenter removeObserver:self name:AFNetworkingTaskDidCompleteNotification object:nil];
 
     if (task) {
+        //对象是从refreshControl中创建的 所以refreshControl不为nil
         UIRefreshControl *refreshControl = self.refreshControl;
         if (task.state == NSURLSessionTaskStateRunning) {
             [refreshControl beginRefreshing];

@@ -33,6 +33,8 @@ NS_ASSUME_NONNULL_BEGIN
 
 /**
  This category adds methods to the UIKit framework's `UIImageView` class. The methods in this category provide support for loading remote images asynchronously from a URL.
+ 
+ 
  */
 @interface UIImageView (AFNetworking)
 
@@ -44,11 +46,17 @@ NS_ASSUME_NONNULL_BEGIN
  Set the shared image downloader used to download images.
 
  @param imageDownloader The shared image downloader used to download images.
+ 
+ objc_setAssociatedObject
+ 
  */
 + (void)setSharedImageDownloader:(AFImageDownloader *)imageDownloader;
 
 /**
  The shared image downloader used to download images.
+ 
+ objc_getAssociatedObject
+ 
  */
 + (AFImageDownloader *)sharedImageDownloader;
 
@@ -76,6 +84,9 @@ NS_ASSUME_NONNULL_BEGIN
 
  @param url The URL used for the image request.
  @param placeholderImage The image to be set initially, until the image request finishes. If `nil`, the image view will not change its image until the image request finishes.
+ 
+ 创建请求 然后调用下面的方法
+ 
  */
 - (void)setImageWithURL:(NSURL *)url
        placeholderImage:(nullable UIImage *)placeholderImage;

@@ -30,12 +30,15 @@
 NS_ASSUME_NONNULL_BEGIN
 
 typedef NS_ENUM(NSInteger, AFImageDownloadPrioritization) {
-    AFImageDownloadPrioritizationFIFO,
-    AFImageDownloadPrioritizationLIFO
+    AFImageDownloadPrioritizationFIFO,//先进先出
+    AFImageDownloadPrioritizationLIFO //后进先出
 };
 
 /**
  The `AFImageDownloadReceipt` is an object vended by the `AFImageDownloader` when starting a data task. It can be used to cancel active tasks running on the `AFImageDownloader` session. As a general rule, image data tasks should be cancelled using the `AFImageDownloadReceipt` instead of calling `cancel` directly on the `task` itself. The `AFImageDownloader` is optimized to handle duplicate task scenarios as well as pending versus active downloads.
+ 
+ 
+ 
  */
 @interface AFImageDownloadReceipt : NSObject
 
@@ -116,6 +119,9 @@ typedef NS_ENUM(NSInteger, AFImageDownloadPrioritization) {
 
  @return The image download receipt for the data task if available. `nil` if the image is stored in the cache.
  cache and the URL request cache policy allows the cache to be used.
+ 
+ 调用下面的方法
+ 
  */
 - (nullable AFImageDownloadReceipt *)downloadImageForURLRequest:(NSURLRequest *)request
                                                         success:(nullable void (^)(NSURLRequest *request, NSHTTPURLResponse  * _Nullable response, UIImage *responseObject))success
@@ -147,6 +153,11 @@ typedef NS_ENUM(NSInteger, AFImageDownloadPrioritization) {
  If the data task is pending in the queue, it will be cancelled if no other success and failure blocks are registered with the data task. If the data task is currently executing or is already completed, the success and failure blocks are removed and will not be called when the task finishes.
 
  @param imageDownloadReceipt The image download receipt to cancel.
+ 
+ 
+ 移除imageDownloadReceipt对应的AFImageDownloaderResponseHandler
+ 如果移除之后responseHandlers数量为0且任务没有在运行 则取消任务 也就是说正在运行的任务不会被取消
+ 
  */
 - (void)cancelTaskForImageDownloadReceipt:(AFImageDownloadReceipt *)imageDownloadReceipt;
 

@@ -106,7 +106,7 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
     [_activationDelayTimer invalidate];
     [_completionDelayTimer invalidate];
 }
-///r 将直接设置状态为AFNetworkActivityManagerStateNotActive
+/// 将直接设置状态为AFNetworkActivityManagerStateNotActive
 - (void)setEnabled:(BOOL)enabled {
     _enabled = enabled;
     //如果是NO 把当前状态强制设为AFNetworkActivityManagerStateNotActive
@@ -141,7 +141,7 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
     }
 }
 
-///r
+ 
 - (void)setActivityCount:(NSInteger)activityCount {
 	@synchronized(self) {
 		_activityCount = activityCount;
@@ -152,7 +152,7 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
     });
 }
 
-///r
+ 
 - (void)incrementActivityCount {
     [self willChangeValueForKey:@"activityCount"];
 	@synchronized(self) {
@@ -165,7 +165,7 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
     });
 }
 
-///r
+ 
 - (void)decrementActivityCount {
     [self willChangeValueForKey:@"activityCount"];
 	@synchronized(self) {
@@ -193,7 +193,7 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
 }
 
 #pragma mark - Internal State Management
-///r currentState setter
+  currentState setter
 - (void)setCurrentState:(AFNetworkActivityManagerState)currentState {
     @synchronized(self) {
         if (_currentState != currentState) {
@@ -230,7 +230,7 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
     }
 }
 
-///r
+ 
 - (void)updateCurrentStateForNetworkActivityChange {
     if (self.enabled) {
         switch (self.currentState) {
@@ -256,13 +256,13 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
     }
 }
 
-///r 一次性的timer
+/// 一次性的timer
 - (void)startActivationDelayTimer {
     self.activationDelayTimer = [NSTimer
                                  timerWithTimeInterval:self.activationDelay target:self selector:@selector(activationDelayTimerFired) userInfo:nil repeats:NO];
     [[NSRunLoop mainRunLoop] addTimer:self.activationDelayTimer forMode:NSRunLoopCommonModes];
 }
-///r activationDelayTimer的回调
+///activationDelayTimer的回调
 - (void)activationDelayTimerFired {
     if (self.networkActivityOccurring) {
         [self setCurrentState:AFNetworkActivityManagerStateActive];
@@ -271,7 +271,7 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
     }
 }
 
-///r 一次性的timer
+/// 一次性的timer
 - (void)startCompletionDelayTimer {
     [self.completionDelayTimer invalidate];
     self.completionDelayTimer = [NSTimer timerWithTimeInterval:self.completionDelay target:self selector:@selector(completionDelayTimerFired) userInfo:nil repeats:NO];
@@ -281,11 +281,11 @@ typedef void (^AFNetworkActivityActionBlock)(BOOL networkActivityIndicatorVisibl
 - (void)completionDelayTimerFired {
     [self setCurrentState:AFNetworkActivityManagerStateNotActive];
 }
-///r
+ 
 - (void)cancelActivationDelayTimer {
     [self.activationDelayTimer invalidate];
 }
-///r
+ 
 - (void)cancelCompletionDelayTimer {
     [self.completionDelayTimer invalidate];
 }

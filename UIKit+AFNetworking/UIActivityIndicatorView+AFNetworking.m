@@ -35,7 +35,7 @@
 @end
 
 @implementation UIActivityIndicatorView (AFNetworking)
-
+ 
 - (AFActivityIndicatorViewNotificationObserver *)af_notificationObserver {
     AFActivityIndicatorViewNotificationObserver *notificationObserver = objc_getAssociatedObject(self, @selector(af_notificationObserver));
     if (notificationObserver == nil) {
@@ -44,7 +44,7 @@
     }
     return notificationObserver;
 }
-
+ 
 - (void)setAnimatingWithStateOfTask:(NSURLSessionTask *)task {
     [[self af_notificationObserver] setAnimatingWithStateOfTask:task];
 }
@@ -52,7 +52,7 @@
 @end
 
 @implementation AFActivityIndicatorViewNotificationObserver
-
+ 
 - (instancetype)initWithActivityIndicatorView:(UIActivityIndicatorView *)activityIndicatorView
 {
     self = [super init];

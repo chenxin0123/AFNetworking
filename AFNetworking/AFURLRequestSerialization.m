@@ -216,11 +216,11 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
 @end
 
 @implementation AFHTTPRequestSerializer
-///r
+ 
 + (instancetype)serializer {
     return [[self alloc] init];
 }
-///r
+ 
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -283,7 +283,7 @@ static void *AFHTTPRequestSerializerObserverContext = &AFHTTPRequestSerializerOb
     return self;
 }
 
-///r
+ 
 - (void)dealloc {
     for (NSString *keyPath in AFHTTPRequestSerializerObservedKeyPaths()) {
         if ([self respondsToSelector:NSSelectorFromString(keyPath)]) {
@@ -353,7 +353,7 @@ forHTTPHeaderField:(NSString *)field
         [self.mutableHTTPRequestHeaders setValue:value forKey:field];
     });
 }
-///r
+ 
 - (NSString *)valueForHTTPHeaderField:(NSString *)field {
     NSString __block *value;
     //因为要使用value值 所以sync等待block被执行再返回
@@ -362,7 +362,7 @@ forHTTPHeaderField:(NSString *)field
     });
     return value;
 }
-///r
+ 
 - (void)setAuthorizationHeaderFieldWithUsername:(NSString *)username
                                        password:(NSString *)password
 {
@@ -371,7 +371,7 @@ forHTTPHeaderField:(NSString *)field
     NSString *base64AuthCredentials = [basicAuthCredentials base64EncodedStringWithOptions:(NSDataBase64EncodingOptions)0];
     [self setValue:[NSString stringWithFormat:@"Basic %@", base64AuthCredentials] forHTTPHeaderField:@"Authorization"];
 }
-///r
+ 
 - (void)clearAuthorizationHeader {
     dispatch_barrier_async(self.requestHeaderModificationQueue, ^{
         [self.mutableHTTPRequestHeaders removeObjectForKey:@"Authorization"];
@@ -379,12 +379,12 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark -
-///r
+ 
 - (void)setQueryStringSerializationWithStyle:(AFHTTPRequestQueryStringSerializationStyle)style {
     self.queryStringSerializationStyle = style;
     self.queryStringSerialization = nil;
 }
-///r
+ 
 - (void)setQueryStringSerializationWithBlock:(NSString *(^)(NSURLRequest *, id, NSError *__autoreleasing *))block {
     self.queryStringSerialization = block;
 }
@@ -458,7 +458,7 @@ forHTTPHeaderField:(NSString *)field
 
     return [formData requestByFinalizingMultipartFormData];
 }
-///r
+ 
 - (NSMutableURLRequest *)requestWithMultipartFormRequest:(NSURLRequest *)request
                              writingStreamContentsToFile:(NSURL *)fileURL
                                        completionHandler:(void (^)(NSError *error))handler
@@ -515,7 +515,7 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark - AFURLRequestSerialization
-///r
+ 
 - (NSURLRequest *)requestBySerializingRequest:(NSURLRequest *)request
                                withParameters:(id)parameters
                                         error:(NSError *__autoreleasing *)error
@@ -587,7 +587,7 @@ forHTTPHeaderField:(NSString *)field
     return [super automaticallyNotifiesObserversForKey:key];
 }
 
-///r
+ 
 - (void)observeValueForKeyPath:(NSString *)keyPath
                       ofObject:(__unused id)object
                         change:(NSDictionary *)change
@@ -603,11 +603,11 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark - NSSecureCoding
-///r
+ 
 + (BOOL)supportsSecureCoding {
     return YES;
 }
-///r
+ 
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [self init];
     if (!self) {
@@ -619,7 +619,7 @@ forHTTPHeaderField:(NSString *)field
 
     return self;
 }
-///r
+ 
 - (void)encodeWithCoder:(NSCoder *)coder {
     dispatch_sync(self.requestHeaderModificationQueue, ^{
         [coder encodeObject:self.mutableHTTPRequestHeaders forKey:NSStringFromSelector(@selector(mutableHTTPRequestHeaders))];
@@ -628,7 +628,7 @@ forHTTPHeaderField:(NSString *)field
 }
 
 #pragma mark - NSCopying
-///r
+ 
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFHTTPRequestSerializer *serializer = [[[self class] allocWithZone:zone] init];
     dispatch_sync(self.requestHeaderModificationQueue, ^{
@@ -776,7 +776,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 }
 
 #pragma mark - AFMultipartFormData
-///r
+ 
 - (BOOL)appendPartWithFileURL:(NSURL *)fileURL
                          name:(NSString *)name
                         error:(NSError * __autoreleasing *)error
@@ -790,7 +790,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 
     return [self appendPartWithFileURL:fileURL name:name fileName:fileName mimeType:mimeType error:error];
 }
-///r
+ 
 - (BOOL)appendPartWithFileURL:(NSURL *)fileURL
                          name:(NSString *)name
                      fileName:(NSString *)fileName
@@ -935,7 +935,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     [self.bodyStream appendHTTPBodyPart:bodyPart];
 }
 
-///r
+ 
 - (void)throttleBandwidthWithPacketSize:(NSUInteger)numberOfBytes
                                   delay:(NSTimeInterval)delay
 {
@@ -994,7 +994,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 @synthesize streamStatus;
 @synthesize streamError;
 
-///r
+ 
 - (instancetype)initWithStringEncoding:(NSStringEncoding)encoding {
     self = [super init];
     if (!self) {
@@ -1008,7 +1008,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     return self;
 }
 
-///r 将全部段的第一个hasInitialBoundary 和最后一个hasFinalBoundary设置为YES
+/// 将全部段的第一个hasInitialBoundary 和最后一个hasFinalBoundary设置为YES
 - (void)setInitialAndFinalBoundaries {
     if ([self.HTTPBodyParts count] > 0) {
         //遍历所有的段 将hasInitialBoundary和hasFinalBoundary均设为NO
@@ -1021,11 +1021,11 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
         [[self.HTTPBodyParts lastObject] setHasFinalBoundary:YES];
     }
 }
-///r
+ 
 - (void)appendHTTPBodyPart:(AFHTTPBodyPart *)bodyPart {
     [self.HTTPBodyParts addObject:bodyPart];
 }
-///r
+ 
 - (BOOL)isEmpty {
     return [self.HTTPBodyParts count] == 0;
 }
@@ -1076,13 +1076,13 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 {
     return NO;
 }
-///r
+ 
 - (BOOL)hasBytesAvailable {
     return [self streamStatus] == NSStreamStatusOpen;
 }
 
 #pragma mark - NSStream
-///r
+ 
 - (void)open {
     if (self.streamStatus == NSStreamStatusOpen) {
         return;
@@ -1093,15 +1093,15 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
     [self setInitialAndFinalBoundaries];
     self.HTTPBodyPartEnumerator = [self.HTTPBodyParts objectEnumerator];
 }
-///r
+ 
 - (void)close {
     self.streamStatus = NSStreamStatusClosed;
 }
-///r
+ 
 - (id)propertyForKey:(__unused NSString *)key {
     return nil;
 }
-///r
+ 
 - (BOOL)setProperty:(__unused id)property
              forKey:(__unused NSString *)key
 {
@@ -1122,7 +1122,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
                   forMode:(__unused NSString *)mode
 {}
 
-///r
+ 
 - (unsigned long long)contentLength {
     unsigned long long length = 0;
     for (AFHTTPBodyPart *bodyPart in self.HTTPBodyParts) {
@@ -1163,7 +1163,7 @@ NSTimeInterval const kAFUploadStream3GSuggestedDelay = 0.2;
 }
 
 #pragma mark - NSCopying
-///r
+ 
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFMultipartBodyStream *bodyStreamCopy = [[[self class] allocWithZone:zone] initWithStringEncoding:self.stringEncoding];
 
@@ -1205,7 +1205,7 @@ typedef enum {
 @end
 
 @implementation AFHTTPBodyPart
-///r
+ 
 - (instancetype)init {
     self = [super init];
     if (!self) {
@@ -1393,7 +1393,7 @@ typedef enum {
 }
 
 #pragma mark - NSCopying
-///r
+ 
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFHTTPBodyPart *bodyPart = [[[self class] allocWithZone:zone] init];
 
@@ -1411,11 +1411,11 @@ typedef enum {
 #pragma mark -
 
 @implementation AFJSONRequestSerializer
-///r
+ 
 + (instancetype)serializer {
     return [self serializerWithWritingOptions:(NSJSONWritingOptions)0];
 }
-///r
+ 
 + (instancetype)serializerWithWritingOptions:(NSJSONWritingOptions)writingOptions
 {
     AFJSONRequestSerializer *serializer = [[self alloc] init];
@@ -1459,7 +1459,7 @@ typedef enum {
 }
 
 #pragma mark - NSSecureCoding
-///r
+ 
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (!self) {
@@ -1470,7 +1470,7 @@ typedef enum {
 
     return self;
 }
-///r
+ 
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
 
@@ -1478,7 +1478,7 @@ typedef enum {
 }
 
 #pragma mark - NSCopying
-///r
+ 
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFJSONRequestSerializer *serializer = [super copyWithZone:zone];
     serializer.writingOptions = self.writingOptions;
@@ -1491,11 +1491,11 @@ typedef enum {
 #pragma mark -
 
 @implementation AFPropertyListRequestSerializer
-///r
+ 
 + (instancetype)serializer {
     return [self serializerWithFormat:NSPropertyListXMLFormat_v1_0 writeOptions:0];
 }
-///r
+ 
 + (instancetype)serializerWithFormat:(NSPropertyListFormat)format
                         writeOptions:(NSPropertyListWriteOptions)writeOptions
 {
@@ -1538,7 +1538,7 @@ typedef enum {
 }
 
 #pragma mark - NSSecureCoding
-///r
+ 
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     self = [super initWithCoder:decoder];
     if (!self) {
@@ -1550,7 +1550,7 @@ typedef enum {
 
     return self;
 }
-///r
+ 
 - (void)encodeWithCoder:(NSCoder *)coder {
     [super encodeWithCoder:coder];
 
@@ -1559,7 +1559,7 @@ typedef enum {
 }
 
 #pragma mark - NSCopying
-///r
+ 
 - (instancetype)copyWithZone:(NSZone *)zone {
     AFPropertyListRequestSerializer *serializer = [super copyWithZone:zone];
     serializer.format = self.format;

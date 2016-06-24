@@ -35,6 +35,9 @@ NS_ASSUME_NONNULL_BEGIN
  This category adds methods to the UIKit framework's `UIButton` class. The methods in this category provide support for loading remote images and background images asynchronously from a URL.
 
  @warning Compound values for control `state` (such as `UIControlStateHighlighted | UIControlStateDisabled`) are unsupported.
+ 
+ 实现同UIImageView+AFNetworking 不过多了state的处理
+ 
  */
 @interface UIButton (AFNetworking)
 

@@ -25,6 +25,9 @@
 
 #import "AFAutoPurgingImageCache.h"
 
+/**
+ *  缓存图片的封装
+ */
 @interface AFCachedImage : NSObject
 
 @property (nonatomic, strong) UIImage *image;
@@ -42,20 +45,28 @@
         self.image = image;
         self.identifier = identifier;
 
+        //图片大小 要乘以图片的scale
         CGSize imageSize = CGSizeMake(image.size.width * image.scale, image.size.height * image.scale);
+        //每个像素4个字节 rgba
         CGFloat bytesPerPixel = 4.0;
+        //图片像素数量
         CGFloat bytesPerSize = imageSize.width * imageSize.height;
+        //占用字节数
         self.totalBytes = (UInt64)bytesPerPixel * (UInt64)bytesPerSize;
+        //设为当前时间
         self.lastAccessDate = [NSDate date];
     }
     return self;
 }
 
+/**
+ *  更新lastAccessDate并返回图片
+ */
 - (UIImage*)accessImage {
     self.lastAccessDate = [NSDate date];
     return self.image;
 }
-
+ 
 - (NSString *)description {
     NSString *descriptionString = [NSString stringWithFormat:@"Idenfitier: %@  lastAccessDate: %@ ", self.identifier, self.lastAccessDate];
     return descriptionString;
@@ -65,17 +76,22 @@
 @end
 
 @interface AFAutoPurgingImageCache ()
+
 @property (nonatomic, strong) NSMutableDictionary <NSString* , AFCachedImage*> *cachedImages;
+
 @property (nonatomic, assign) UInt64 currentMemoryUsage;
+///并行队列 对缓存的操作都在这个队列里执行
 @property (nonatomic, strong) dispatch_queue_t synchronizationQueue;
 @end
 
 @implementation AFAutoPurgingImageCache
 
+ 
 - (instancetype)init {
     return [self initWithMemoryCapacity:100 * 1024 * 1024 preferredMemoryCapacity:60 * 1024 * 1024];
 }
 
+ 
 - (instancetype)initWithMemoryCapacity:(UInt64)memoryCapacity preferredMemoryCapacity:(UInt64)preferredMemoryCapacity {
     if (self = [super init]) {
         self.memoryCapacity = memoryCapacity;
@@ -84,7 +100,7 @@
 
         NSString *queueName = [NSString stringWithFormat:@"com.alamofire.autopurgingimagecache-%@", [[NSUUID UUID] UUIDString]];
         self.synchronizationQueue = dispatch_queue_create([queueName cStringUsingEncoding:NSASCIIStringEncoding], DISPATCH_QUEUE_CONCURRENT);
-
+        //收到内存警告 则移除所有的缓存
         [[NSNotificationCenter defaultCenter]
          addObserver:self
          selector:@selector(removeAllImages)
@@ -95,10 +111,12 @@
     return self;
 }
 
+ 
 - (void)dealloc {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
+ 
 - (UInt64)memoryUsage {
     __block UInt64 result = 0;
     dispatch_sync(self.synchronizationQueue, ^{
@@ -107,7 +125,9 @@
     return result;
 }
 
+///添加缓存 并删除缓存ifneeded
 - (void)addImage:(UIImage *)image withIdentifier:(NSString *)identifier {
+    //是否已存在 存在则删除
     dispatch_barrier_async(self.synchronizationQueue, ^{
         AFCachedImage *cacheImage = [[AFCachedImage alloc] initWithImage:image identifier:identifier];
 
@@ -115,21 +135,23 @@
         if (previousCachedImage != nil) {
             self.currentMemoryUsage -= previousCachedImage.totalBytes;
         }
-
         self.cachedImages[identifier] = cacheImage;
         self.currentMemoryUsage += cacheImage.totalBytes;
     });
 
+    //是否到达内存使用量瓶颈
     dispatch_barrier_async(self.synchronizationQueue, ^{
         if (self.currentMemoryUsage > self.memoryCapacity) {
+            //总共要删除的内存总量
             UInt64 bytesToPurge = self.currentMemoryUsage - self.preferredMemoryUsageAfterPurge;
             NSMutableArray <AFCachedImage*> *sortedImages = [NSMutableArray arrayWithArray:self.cachedImages.allValues];
+            //按lastAccessDate升序
             NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"lastAccessDate"
                                                                            ascending:YES];
             [sortedImages sortUsingDescriptors:@[sortDescriptor]];
 
             UInt64 bytesPurged = 0;
-
+            //遍历删除直到bytesPurged>=bytesToPurge
             for (AFCachedImage *cachedImage in sortedImages) {
                 [self.cachedImages removeObjectForKey:cachedImage.identifier];
                 bytesPurged += cachedImage.totalBytes;
@@ -142,12 +164,14 @@
     });
 }
 
+ 
 - (BOOL)removeImageWithIdentifier:(NSString *)identifier {
     __block BOOL removed = NO;
     dispatch_barrier_sync(self.synchronizationQueue, ^{
         AFCachedImage *cachedImage = self.cachedImages[identifier];
         if (cachedImage != nil) {
             [self.cachedImages removeObjectForKey:identifier];
+            //移除掉后设置currentMemoryUsage
             self.currentMemoryUsage -= cachedImage.totalBytes;
             removed = YES;
         }
@@ -155,11 +179,13 @@
     return removed;
 }
 
+ 
 - (BOOL)removeAllImages {
     __block BOOL removed = NO;
     dispatch_barrier_sync(self.synchronizationQueue, ^{
         if (self.cachedImages.count > 0) {
             [self.cachedImages removeAllObjects];
+            //重置currentMemoryUsage为0
             self.currentMemoryUsage = 0;
             removed = YES;
         }
@@ -167,6 +193,7 @@
     return removed;
 }
 
+ 
 - (nullable UIImage *)imageWithIdentifier:(NSString *)identifier {
     __block UIImage *image = nil;
     dispatch_sync(self.synchronizationQueue, ^{

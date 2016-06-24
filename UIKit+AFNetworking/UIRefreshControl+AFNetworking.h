@@ -43,6 +43,9 @@ NS_ASSUME_NONNULL_BEGIN
  Binds the refreshing state to the state of the specified task.
  
  @param task The task. If `nil`, automatic updating from any previously specified operation will be disabled.
+ 
+ 为一个任务绑定刷新控件 task为nil则解绑之前的任务
+ 
  */
 - (void)setRefreshingWithStateOfTask:(NSURLSessionTask *)task;
 

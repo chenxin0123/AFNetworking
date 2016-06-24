@@ -32,7 +32,7 @@ NSString * const AFNetworkingReachabilityDidChangeNotification = @"com.alamofire
 NSString * const AFNetworkingReachabilityNotificationStatusItem = @"AFNetworkingReachabilityNotificationStatusItem";
 
 typedef void (^AFNetworkReachabilityStatusBlock)(AFNetworkReachabilityStatus status);
-///r
+ 
 NSString * AFStringFromNetworkReachabilityStatus(AFNetworkReachabilityStatus status) {
     switch (status) {
         case AFNetworkReachabilityStatusNotReachable:
@@ -105,7 +105,7 @@ static void AFNetworkReachabilityCallback(SCNetworkReachabilityRef __unused targ
 static const void * AFNetworkReachabilityRetainCallback(const void *info) {
     return Block_copy(info);
 }
-///r
+ 
 static void AFNetworkReachabilityReleaseCallback(const void *info) {
     if (info) {
         Block_release(info);
@@ -121,7 +121,7 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
 @end
 
 @implementation AFNetworkReachabilityManager
-///r
+ 
 + (instancetype)sharedManager {
     static AFNetworkReachabilityManager *_sharedManager = nil;
     static dispatch_once_t onceToken;
@@ -207,7 +207,7 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
     return nil;
 }
 
-///r
+ 
 - (void)dealloc {
     [self stopMonitoring];
     
@@ -286,13 +286,13 @@ static void AFNetworkReachabilityReleaseCallback(const void *info) {
 }
 
 #pragma mark -
-///r
+ 
 - (NSString *)localizedNetworkReachabilityStatusString {
     return AFStringFromNetworkReachabilityStatus(self.networkReachabilityStatus);
 }
 
 #pragma mark -
-///r
+ 
 - (void)setReachabilityStatusChangeBlock:(void (^)(AFNetworkReachabilityStatus status))block {
     self.networkReachabilityStatusBlock = block;
 }

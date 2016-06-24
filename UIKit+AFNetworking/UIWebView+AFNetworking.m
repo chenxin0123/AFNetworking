@@ -34,11 +34,11 @@
 @end
 
 @implementation UIWebView (_AFNetworking)
-
+ 
 - (NSURLSessionDataTask *)af_URLSessionTask {
     return (NSURLSessionDataTask *)objc_getAssociatedObject(self, @selector(af_URLSessionTask));
 }
-
+ 
 - (void)af_setURLSessionTask:(NSURLSessionDataTask *)af_URLSessionTask {
     objc_setAssociatedObject(self, @selector(af_URLSessionTask), af_URLSessionTask, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
@@ -48,7 +48,7 @@
 #pragma mark -
 
 @implementation UIWebView (AFNetworking)
-
+///有则返回 无则默认
 - (AFHTTPSessionManager  *)sessionManager {
     static AFHTTPSessionManager *_af_defaultHTTPSessionManager = nil;
     static dispatch_once_t onceToken;
@@ -60,11 +60,12 @@
 
     return objc_getAssociatedObject(self, @selector(sessionManager)) ?: _af_defaultHTTPSessionManager;
 }
-
+ 
 - (void)setSessionManager:(AFHTTPSessionManager *)sessionManager {
     objc_setAssociatedObject(self, @selector(sessionManager), sessionManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
+ 
 - (AFHTTPResponseSerializer <AFURLResponseSerialization> *)responseSerializer {
     static AFHTTPResponseSerializer <AFURLResponseSerialization> *_af_defaultResponseSerializer = nil;
     static dispatch_once_t onceToken;
@@ -75,12 +76,13 @@
     return objc_getAssociatedObject(self, @selector(responseSerializer)) ?: _af_defaultResponseSerializer;
 }
 
+ 
 - (void)setResponseSerializer:(AFHTTPResponseSerializer<AFURLResponseSerialization> *)responseSerializer {
     objc_setAssociatedObject(self, @selector(responseSerializer), responseSerializer, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 #pragma mark -
-
+ 
 - (void)loadRequest:(NSURLRequest *)request
            progress:(NSProgress * _Nullable __autoreleasing * _Nullable)progress
             success:(NSString * (^)(NSHTTPURLResponse *response, NSString *HTML))success
@@ -94,16 +96,16 @@
                 stringEncoding = CFStringConvertEncodingToNSStringEncoding(encoding);
             }
         }
-
+        //先解析返回的data
         NSString *string = [[NSString alloc] initWithData:data encoding:stringEncoding];
         if (success) {
             string = success(response, string);
         }
-
         return [string dataUsingEncoding:stringEncoding];
+        
     } failure:failure];
 }
-
+ 
 - (void)loadRequest:(NSURLRequest *)request
            MIMEType:(NSString *)MIMEType
    textEncodingName:(NSString *)textEncodingName
@@ -113,6 +115,7 @@
 {
     NSParameterAssert(request);
 
+    //有任务先取消
     if (self.af_URLSessionTask.state == NSURLSessionTaskStateRunning || self.af_URLSessionTask.state == NSURLSessionTaskStateSuspended) {
         [self.af_URLSessionTask cancel];
     }

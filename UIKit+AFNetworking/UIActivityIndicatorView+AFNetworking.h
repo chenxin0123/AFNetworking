@@ -29,6 +29,9 @@
 
 /**
  This category adds methods to the UIKit framework's `UIActivityIndicatorView` class. The methods in this category provide support for automatically starting and stopping animation depending on the loading state of a session task.
+ 
+ 根据task的状态改变自己的状态 实现同UIRefreshControl+AFNetworking
+ 
  */
 @interface UIActivityIndicatorView (AFNetworking)
 

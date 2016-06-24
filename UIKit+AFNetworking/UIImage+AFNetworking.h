@@ -27,7 +27,12 @@
 #import <UIKit/UIKit.h>
 
 @interface UIImage (AFNetworking)
-
+/**
+ *  线程安全的imageWithData
+ *
+ *  实现在AFURLResponseSerialization中
+ *
+ */
 + (UIImage*) safeImageWithData:(NSData*)data;
 
 @end

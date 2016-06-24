@@ -44,6 +44,9 @@ NS_ASSUME_NONNULL_BEGIN
 
  @param task The session task.
  @param animated `YES` if the change should be animated, `NO` if the change should happen immediately.
+ 
+ KVO state countOfBytesSent state为NSURLSessionTaskStateCompleted时认为完成  countOfBytesSent跟踪进度
+ 
  */
 - (void)setProgressWithUploadProgressOfTask:(NSURLSessionUploadTask *)task
                                    animated:(BOOL)animated;
@@ -53,6 +56,9 @@ NS_ASSUME_NONNULL_BEGIN
 
  @param task The session task.
  @param animated `YES` if the change should be animated, `NO` if the change should happen immediately.
+ 
+ KVO state countOfBytesReceived
+ 
  */
 - (void)setProgressWithDownloadProgressOfTask:(NSURLSessionDownloadTask *)task
                                      animated:(BOOL)animated;

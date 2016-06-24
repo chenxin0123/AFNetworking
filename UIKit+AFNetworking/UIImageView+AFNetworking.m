@@ -32,11 +32,12 @@
 @end
 
 @implementation UIImageView (_AFNetworking)
-
+ 
 - (AFImageDownloadReceipt *)af_activeImageDownloadReceipt {
     return (AFImageDownloadReceipt *)objc_getAssociatedObject(self, @selector(af_activeImageDownloadReceipt));
 }
 
+ 
 - (void)af_setActiveImageDownloadReceipt:(AFImageDownloadReceipt *)imageDownloadReceipt {
     objc_setAssociatedObject(self, @selector(af_activeImageDownloadReceipt), imageDownloadReceipt, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
@@ -47,45 +48,52 @@
 
 @implementation UIImageView (AFNetworking)
 
+
+ 
 + (AFImageDownloader *)sharedImageDownloader {
     return objc_getAssociatedObject(self, @selector(sharedImageDownloader)) ?: [AFImageDownloader defaultInstance];
 }
 
+ 
 + (void)setSharedImageDownloader:(AFImageDownloader *)imageDownloader {
     objc_setAssociatedObject(self, @selector(sharedImageDownloader), imageDownloader, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 #pragma mark -
-
+ 
 - (void)setImageWithURL:(NSURL *)url {
     [self setImageWithURL:url placeholderImage:nil];
 }
 
+/// 创建请求 然后调用下面的方法
 - (void)setImageWithURL:(NSURL *)url
        placeholderImage:(UIImage *)placeholderImage
 {
+    
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
     [request addValue:@"image/*" forHTTPHeaderField:@"Accept"];
 
     [self setImageWithURLRequest:request placeholderImage:placeholderImage success:nil failure:nil];
 }
-
+//r
 - (void)setImageWithURLRequest:(NSURLRequest *)urlRequest
               placeholderImage:(UIImage *)placeholderImage
                        success:(void (^)(NSURLRequest *request, NSHTTPURLResponse * _Nullable response, UIImage *image))success
                        failure:(void (^)(NSURLRequest *request, NSHTTPURLResponse * _Nullable response, NSError *error))failure
 {
 
+    //清除任务 并设置图片为placeholderImage
     if ([urlRequest URL] == nil) {
         [self cancelImageDownloadTask];
         self.image = placeholderImage;
         return;
     }
 
+    //是否重复设置任务
     if ([self isActiveTaskURLEqualToURLRequest:urlRequest]){
         return;
     }
-
+    //清除上次的任务
     [self cancelImageDownloadTask];
 
     AFImageDownloader *downloader = [[self class] sharedImageDownloader];
@@ -94,6 +102,7 @@
     //Use the image from the image cache if it exists
     UIImage *cachedImage = [imageCache imageforRequest:urlRequest withAdditionalIdentifier:nil];
     if (cachedImage) {
+        //有block执行block 没有则self.image = cachedImage; 成功要自己设置图片。。。
         if (success) {
             success(urlRequest, nil, cachedImage);
         } else {
@@ -101,6 +110,7 @@
         }
         [self clearActiveDownloadInformation];
     } else {
+        //没有缓存 先设置为placeholderImage
         if (placeholderImage) {
             self.image = placeholderImage;
         }
@@ -137,6 +147,7 @@
     }
 }
 
+ 
 - (void)cancelImageDownloadTask {
     if (self.af_activeImageDownloadReceipt != nil) {
         [[self.class sharedImageDownloader] cancelTaskForImageDownloadReceipt:self.af_activeImageDownloadReceipt];
@@ -144,10 +155,12 @@
      }
 }
 
+/// 清除af_activeImageDownloadReceipt
 - (void)clearActiveDownloadInformation {
     self.af_activeImageDownloadReceipt = nil;
 }
 
+///是否重复设置任务
 - (BOOL)isActiveTaskURLEqualToURLRequest:(NSURLRequest *)urlRequest {
     return [self.af_activeImageDownloadReceipt.task.originalRequest.URL.absoluteString isEqualToString:urlRequest.URL.absoluteString];
 }

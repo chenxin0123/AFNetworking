@@ -47,22 +47,22 @@
 @implementation AFHTTPSessionManager
 @dynamic responseSerializer;
 
-///r
+ 
 + (instancetype)manager {
     return [[[self class] alloc] initWithBaseURL:nil];
 }
 
-///r
+ 
 - (instancetype)init {
     return [self initWithBaseURL:nil];
 }
 
-///r
+ 
 - (instancetype)initWithBaseURL:(NSURL *)url {
     return [self initWithBaseURL:url sessionConfiguration:nil];
 }
 
-///r
+ 
 - (instancetype)initWithSessionConfiguration:(NSURLSessionConfiguration *)configuration {
     return [self initWithBaseURL:nil sessionConfiguration:configuration];
 }
@@ -91,13 +91,13 @@
 }
 
 #pragma mark -
-///r
+ 
 - (void)setRequestSerializer:(AFHTTPRequestSerializer <AFURLRequestSerialization> *)requestSerializer {
     NSParameterAssert(requestSerializer);
 
     _requestSerializer = requestSerializer;
 }
-///r
+ 
 - (void)setResponseSerializer:(AFHTTPResponseSerializer <AFURLResponseSerialization> *)responseSerializer {
     NSParameterAssert(responseSerializer);
 
@@ -105,7 +105,7 @@
 }
 
 #pragma mark -
-///r
+ 
 - (NSURLSessionDataTask *)GET:(NSString *)URLString
                    parameters:(id)parameters
                       success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
@@ -115,7 +115,7 @@
     return [self GET:URLString parameters:parameters progress:nil success:success failure:failure];
 }
 
-///r
+ 
 - (NSURLSessionDataTask *)GET:(NSString *)URLString
                    parameters:(id)parameters
                      progress:(void (^)(NSProgress * _Nonnull))downloadProgress
@@ -136,7 +136,7 @@
     return dataTask;
 }
 
-///r
+ 
 - (NSURLSessionDataTask *)HEAD:(NSString *)URLString
                     parameters:(id)parameters
                        success:(void (^)(NSURLSessionDataTask *task))success
@@ -153,7 +153,7 @@
     return dataTask;
 }
 
-///r
+ 
 - (NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(id)parameters
                        success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
@@ -162,7 +162,7 @@
     return [self POST:URLString parameters:parameters progress:nil success:success failure:failure];
 }
 
-///r
+ 
 - (NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(id)parameters
                       progress:(void (^)(NSProgress * _Nonnull))uploadProgress
@@ -176,7 +176,7 @@
     return dataTask;
 }
 
-///r 调用下面的方法
+/// 调用下面的方法
 - (NSURLSessionDataTask *)POST:(NSString *)URLString
                     parameters:(nullable id)parameters
      constructingBodyWithBlock:(nullable void (^)(id<AFMultipartFormData> _Nonnull))block
@@ -226,7 +226,7 @@
     return task;
 }
 
-///r
+ 
 - (NSURLSessionDataTask *)PUT:(NSString *)URLString
                    parameters:(id)parameters
                       success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
@@ -239,7 +239,7 @@
     return dataTask;
 }
 
-///r
+ 
 - (NSURLSessionDataTask *)PATCH:(NSString *)URLString
                      parameters:(id)parameters
                         success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
@@ -252,7 +252,7 @@
     return dataTask;
 }
 
-///r
+ 
 - (NSURLSessionDataTask *)DELETE:(NSString *)URLString
                       parameters:(id)parameters
                          success:(void (^)(NSURLSessionDataTask *task, id responseObject))success
@@ -268,7 +268,7 @@
 /** 先用self.requestSerializer创建一个请求 再调用dataTaskWithRequest。。。创建一个任务
  
  *  在completionHandler中 有错执行failure 成功执行success
- *  r
+  
  **/
 - (NSURLSessionDataTask *)dataTaskWithHTTPMethod:(NSString *)method
                                        URLString:(NSString *)URLString
@@ -312,18 +312,18 @@
 }
 
 #pragma mark - NSObject
-///r
+ 
 - (NSString *)description {
     return [NSString stringWithFormat:@"<%@: %p, baseURL: %@, session: %@, operationQueue: %@>", NSStringFromClass([self class]), self, [self.baseURL absoluteString], self.session, self.operationQueue];
 }
 
 #pragma mark - NSSecureCoding
-///r
+ 
 + (BOOL)supportsSecureCoding {
     return YES;
 }
 
-///r
+ 
 - (instancetype)initWithCoder:(NSCoder *)decoder {
     NSURL *baseURL = [decoder decodeObjectOfClass:[NSURL class] forKey:NSStringFromSelector(@selector(baseURL))];
     NSURLSessionConfiguration *configuration = [decoder decodeObjectOfClass:[NSURLSessionConfiguration class] forKey:@"sessionConfiguration"];

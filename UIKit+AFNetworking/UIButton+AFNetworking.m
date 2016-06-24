@@ -34,7 +34,7 @@
 @implementation UIButton (_AFNetworking)
 
 #pragma mark -
-
+ 
 static char AFImageDownloadReceiptNormal;
 static char AFImageDownloadReceiptHighlighted;
 static char AFImageDownloadReceiptSelected;
@@ -70,7 +70,7 @@ static char AFBackgroundImageDownloadReceiptNormal;
 static char AFBackgroundImageDownloadReceiptHighlighted;
 static char AFBackgroundImageDownloadReceiptSelected;
 static char AFBackgroundImageDownloadReceiptDisabled;
-
+ 
 static const char * af_backgroundImageDownloadReceiptKeyForState(UIControlState state) {
     switch (state) {
         case UIControlStateHighlighted:
@@ -84,11 +84,11 @@ static const char * af_backgroundImageDownloadReceiptKeyForState(UIControlState 
             return &AFBackgroundImageDownloadReceiptNormal;
     }
 }
-
+ 
 - (AFImageDownloadReceipt *)af_backgroundImageDownloadReceiptForState:(UIControlState)state {
     return (AFImageDownloadReceipt *)objc_getAssociatedObject(self, af_backgroundImageDownloadReceiptKeyForState(state));
 }
-
+ 
 - (void)af_setBackgroundImageDownloadReceipt:(AFImageDownloadReceipt *)imageDownloadReceipt
                                      forState:(UIControlState)state
 {
@@ -100,24 +100,24 @@ static const char * af_backgroundImageDownloadReceiptKeyForState(UIControlState 
 #pragma mark -
 
 @implementation UIButton (AFNetworking)
-
+ 
 + (AFImageDownloader *)sharedImageDownloader {
 
     return objc_getAssociatedObject(self, @selector(sharedImageDownloader)) ?: [AFImageDownloader defaultInstance];
 }
-
+ 
 + (void)setSharedImageDownloader:(AFImageDownloader *)imageDownloader {
     objc_setAssociatedObject(self, @selector(sharedImageDownloader), imageDownloader, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 #pragma mark -
-
+ 
 - (void)setImageForState:(UIControlState)state
                  withURL:(NSURL *)url
 {
     [self setImageForState:state withURL:url placeholderImage:nil];
 }
-
+ 
 - (void)setImageForState:(UIControlState)state
                  withURL:(NSURL *)url
         placeholderImage:(UIImage *)placeholderImage
@@ -127,7 +127,7 @@ static const char * af_backgroundImageDownloadReceiptKeyForState(UIControlState 
 
     [self setImageForState:state withURLRequest:request placeholderImage:placeholderImage success:nil failure:nil];
 }
-
+ 
 - (void)setImageForState:(UIControlState)state
           withURLRequest:(NSURLRequest *)urlRequest
         placeholderImage:(nullable UIImage *)placeholderImage
@@ -156,7 +156,6 @@ static const char * af_backgroundImageDownloadReceiptKeyForState(UIControlState 
         if (placeholderImage) {
             [self setImage:placeholderImage forState:state];
         }
-
         __weak __typeof(self)weakSelf = self;
         NSUUID *downloadID = [NSUUID UUID];
         AFImageDownloadReceipt *receipt;
@@ -190,13 +189,13 @@ static const char * af_backgroundImageDownloadReceiptKeyForState(UIControlState 
 }
 
 #pragma mark -
-
+ 
 - (void)setBackgroundImageForState:(UIControlState)state
                            withURL:(NSURL *)url
 {
     [self setBackgroundImageForState:state withURL:url placeholderImage:nil];
 }
-
+ 
 - (void)setBackgroundImageForState:(UIControlState)state
                            withURL:(NSURL *)url
                   placeholderImage:(nullable UIImage *)placeholderImage
@@ -206,7 +205,7 @@ static const char * af_backgroundImageDownloadReceiptKeyForState(UIControlState 
 
     [self setBackgroundImageForState:state withURLRequest:request placeholderImage:placeholderImage success:nil failure:nil];
 }
-
+ 
 - (void)setBackgroundImageForState:(UIControlState)state
                     withURLRequest:(NSURLRequest *)urlRequest
                   placeholderImage:(nullable UIImage *)placeholderImage
